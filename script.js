@@ -1,29 +1,63 @@
+const board = document.getElementById("bingo-board");
+const callBtn = document.getElementById("callBtn");
+const resetBtn = document.getElementById("resetBtn");
+const calledNumberDisplay = document.getElementById("called-number");
+
+let availableNumbers = [];
+let calledNumbers = [];
+
+// Create bingo board
+function createBoard() {
+  board.innerHTML = "";
+  let nums = [];
+
+  for (let i = 1; i <= 25; i++) nums.push(i);
+  nums.sort(() => Math.random() - 0.5);
+
+  nums.forEach(num => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.textContent = num;
+
+    cell.addEventListener("click", () => {
+      if (calledNumbers.includes(num)) {
+        cell.classList.toggle("marked");
+      }
+    });
+
+    board.appendChild(cell);
+  });
+}
+
 // Call a random number
-callButton.addEventListener("click", () => {
-  let number;
-  do {
-    const col = Math.floor(Math.random() * 5);
-    number = Math.floor(Math.random() * 15) + 1 + col*15;
-  } while(numbersCalled.has(number));
+function callNumber() {
+  if (availableNumbers.length === 0) return;
 
-  numbersCalled.add(number);
+  const index = Math.floor(Math.random() * availableNumbers.length);
+  const number = availableNumbers.splice(index, 1)[0];
+  calledNumbers.push(number);
 
-  // Display called ball
-  const ball = document.createElement("div");
-  ball.classList.add("bingo-ball");
-  const colLetter = columns[Math.floor((number-1)/15)];
-  const colors = { B:"#f44336", I:"#2196f3", N:"#4caf50", G:"#ff9800", O:"#9c27b0" };
-  ball.style.backgroundColor = colors[colLetter];
-  ball.textContent = colLetter + number;
-  calledBallsDiv.appendChild(ball);
+  calledNumberDisplay.textContent = number;
+}
 
-  // Mark cell in table if exists
-  const cell = document.getElementById(`cell-${number}`);
-  if(cell) cell.classList.add("marked");
+// Reset game
+function resetGame() {
+  availableNumbers = [];
+  calledNumbers = [];
+  calledNumberDisplay.textContent = "—";
 
-  // Check for win
-  checkWin();
-});
+  for (let i = 1; i <= 25; i++) availableNumbers.push(i);
+  createBoard();
+}
+
+// Button events
+callBtn.addEventListener("click", callNumber);
+resetBtn.addEventListener("click", resetGame);
+
+// Start game
+resetGame();
+
+
 
 
 
