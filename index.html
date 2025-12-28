@@ -1,47 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Habesha Bingo (Multiplayer)</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habesha Bingo</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h1>WELCOME TO HABESHA BINGO</h1>
 
-  <h1>🎉 HABESHA BINGO 🎉</h1>
-
-  <div id="caller">
-    <div id="called-number">—</div>
-    <button id="callBtn">Call Number</button>
-    <button id="resetBtn">Reset Game</button>
+  <!-- Lobby -->
+  <div id="lobby">
+    <button id="createRoomBtn">Create Room</button>
+    <input type="text" id="joinRoomInput" placeholder="Enter Room ID">
+    <button id="joinRoomBtn">Join Room</button>
   </div>
 
-  <div id="bingo-board"></div>
+  <!-- Game -->
+  <div id="game" style="display:none;">
+    <h2>Room: <span id="roomIdDisplay"></span></h2>
+    <h3>Current Turn: <span id="currentTurn"></span></h3>
 
-  <!-- 🔥 FIREBASE SDKs (compat version) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <button id="callNumberBtn">Call Number</button>
+    <div id="calledNumber">Number Called: </div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBO4GXSRRmWgXwMMRt-wtlQNZpWbz5GH24",
-    authDomain: "habesha-bingo-bf60a.firebaseapp.com",
-    databaseURL: "https://habesha-bingo-bf60a-default-rtdb.firebaseio.com",
-    projectId: "habesha-bingo-bf60a",
-    storageBucket: "habesha-bingo-bf60a.appspot.com",
-    messagingSenderId: "787934477608",
-    appId: "1:787934477608:web:b9a201fa07a4fae3a2241d"
-  };
+    <div id="board"></div>
+  </div>
 
-  firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
+  <!-- Sound -->
+  <audio id="bingoSound" src="sound/bell.mp3"></audio>
 
-  console.log("🔥 Firebase connected");
-</script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<script src="script.js"></script>
+  <!-- Your Firebase Config -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+  </script>
+
+  <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
