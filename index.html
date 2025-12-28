@@ -2,56 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Habesha Bingo</title>
+  <title>Habesha Bingo – Host</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>WELCOME TO HABESHA BINGO</h1>
 
-  <!-- Lobby -->
-  <div id="lobby">
-    <button id="createRoomBtn">Create Room</button>
-    <input type="text" id="joinRoomInput" placeholder="Enter Room ID">
-    <button id="joinRoomBtn">Join Room</button>
-  </div>
+<h1>Habesha Bingo 🎱 (Host)</h1>
+<p>Room Code: <strong id="roomCode"></strong></p>
 
-  <!-- Game -->
-  <div id="game" style="display:none;">
-    <h2>Room: <span id="roomIdDisplay"></span></h2>
-    <h3>Current Turn: <span id="currentTurn"></span></h3>
+<div id="bingo-ball">
+  <span id="number">--</span>
+</div>
 
-    <button id="callNumberBtn">Call Number</button>
-    <div id="calledNumber">Number Called: </div>
+<button id="callBtn">Call Number</button>
 
-    <div id="board"></div>
-  </div>
-
-  <!-- Sound -->
-  <audio id="bingoSound" src="sound/bell.mp3"></audio>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <!-- Your Firebase Config -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      databaseURL: "YOUR_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-  </script>
-
-  <script src="script.js"></script>
+<script type="module" src="host.js"></script>
 </body>
 </html>
+
+
 
 
 

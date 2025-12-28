@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-/* 🔐 Firebase Config (YOURS – already correct) */
+/* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyBO4GXSRRmWgXwMMRt-wtlQNZpWbz5GH24",
   authDomain: "habesha-bingo-bf60a.firebaseapp.com",
@@ -12,59 +12,40 @@ const firebaseConfig = {
   appId: "1:787934477608:web:b9a201fa07a4fae3a2241d"
 };
 
-/* 🔥 Initialize Firebase */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* 🎱 Bingo Logic */
-const button = document.getElementById("startBtn");
+const callBtn = document.getElementById("callBtn");
 const numberEl = document.getElementById("number");
 const ball = document.getElementById("bingo-ball");
+const roomCodeEl = document.getElementById("roomCode");
 
-function playNumberVoice(num) {
-  const voice = new Audio(`/sounds/numbers/${num}.mp3`);
-  voice.play();
-}
-
+const roomCode = Math.random().toString(36).substring(2,7).toUpperCase();
+roomCodeEl.textContent = roomCode;
 
 let calledNumbers = [];
 
-button.addEventListener("click", () => {
-  if (calledNumbers.length >= 75) {
+callBtn.addEventListener("click", () => {
+  if(calledNumbers.length >= 75){
     alert("All numbers called!");
     return;
   }
 
   let num;
   do {
-    num = Math.floor(Math.random() * 75) + 1;
-  } while (calledNumbers.includes(num));
+    num = Math.floor(Math.random()*75)+1;
+  } while(calledNumbers.includes(num));
 
   calledNumbers.push(num);
 
-  // 🔊 Play sound (user click = allowed)
-  sound.currentTime = 0;
-  sound.play();
-
-  // 🎬 Animate ball
   ball.classList.remove("animate");
-  void ball.offsetWidth; // reset animation
+  void ball.offsetWidth;
   ball.classList.add("animate");
 
-  // 🔢 Show number
   numberEl.textContent = num;
 
-  // ☁️ Save to Firebase
-  set(ref(db, "currentNumber"), {
-    number: num,
-    time: Date.now()
+  set(ref(db, `rooms/${roomCode}`), {
+    currentNumber: num,
+    calledNumbers: calledNumbers
   });
 });
-
-
-
-
-
-
-
-
