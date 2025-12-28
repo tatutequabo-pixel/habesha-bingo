@@ -9,8 +9,15 @@
 
 <h1>Habesha Bingo 🎱</h1>
 
+<!-- Choice Screen -->
+<div id="choiceScreen">
+  <h2>Start Game</h2>
+  <button id="startHost">Start as Host</button>
+  <button id="joinPlayer">Join as Player</button>
+</div>
+
 <!-- Host Panel -->
-<div id="hostSection">
+<div id="hostSection" style="display:none">
   <h2>Host Panel</h2>
   <p>Room Code: <strong id="roomCode"></strong></p>
   <div id="bingo-ball">
@@ -21,21 +28,39 @@
   <div id="calledNumbers"></div>
 </div>
 
-<hr>
-
 <!-- Player Panel -->
-<div id="playerSection">
+<div id="playerSection" style="display:none">
   <h2>Player Panel</h2>
   <input id="playerName" placeholder="Enter Your Name">
   <input id="roomInput" placeholder="Enter Room Code">
   <button id="joinBtn">Join Game</button>
   <div id="playerCard" class="bingo-card"></div>
+  <div id="playerBall">
+    <span id="playerNumber">--</span>
+  </div>
 </div>
 
-<script type="module" src="host.js"></script>
-<script type="module" src="player.js"></script>
+<script>
+const choiceScreen = document.getElementById('choiceScreen');
+const hostSection = document.getElementById('hostSection');
+const playerSection = document.getElementById('playerSection');
+
+document.getElementById('startHost').addEventListener('click', () => {
+  choiceScreen.style.display = 'none';
+  hostSection.style.display = 'block';
+  import('./host.js');
+});
+
+document.getElementById('joinPlayer').addEventListener('click', () => {
+  choiceScreen.style.display = 'none';
+  playerSection.style.display = 'block';
+  import('./player.js');
+});
+</script>
+
 </body>
 </html>
+
 
 
 

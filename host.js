@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBO4GXSRRmWgXwMMRt-wtlQNZpWbz5GH24",
@@ -8,7 +8,7 @@ const firebaseConfig = {
   projectId: "habesha-bingo-bf60a",
   storageBucket: "habesha-bingo-bf60a.firebasestorage.app",
   messagingSenderId: "787934477608",
-  appId: "1:787934477608:web:b9a201fa07a4fae3a2241d"
+  appId: "1:787934477608:web:b9a201fae3a2241d"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -44,8 +44,6 @@ callBtn.addEventListener("click", () => {
   ball.classList.add("animate");
 
   numberEl.textContent = num;
-
-  // Update called numbers list visually
   calledNumbersEl.textContent = calledNumbers.join(", ");
 
   // Update Firebase
@@ -54,3 +52,4 @@ callBtn.addEventListener("click", () => {
     calledNumbers: calledNumbers
   });
 });
+
