@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-/* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyBO4GXSRRmWgXwMMRt-wtlQNZpWbz5GH24",
   authDomain: "habesha-bingo-bf60a.firebaseapp.com",
@@ -15,21 +14,65 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* Player joins room by prompt */
-const room = prompt("Enter Room Code to join").toUpperCase();
-if(!room) alert("No room code entered!");
+const joinBtn = document.getElementById("joinBtn");
+const roomInput = document.getElementById("roomInput");
+const playerNameInput = document.getElementById("playerName");
+const playerCardEl = document.getElementById("playerCard");
+const ball = document.getElementById("playerBall");
+const numberEl = document.getElementById("playerNumber");
 
-const numberEl = document.getElementById("number");
-const ball = document.getElementById("bingo-ball");
+let playerCard = [];
 
-const roomRef = ref(db, `rooms/${room}`);
-onValue(roomRef, (snapshot) => {
-  const data = snapshot.val();
-  if(!data) return;
+function generateCard() {
+  const numbers = [];
+  while(numbers.length < 25){
+    const n = Math.floor(Math.random()*75)+1;
+    if(!numbers.includes(n)) numbers.push(n);
+  }
+  return numbers;
+}
 
-  numberEl.textContent = data.currentNumber;
+function renderCard() {
+  playerCardEl.innerHTML = "";
+  playerCard.forEach(num => {
+    const cell = document.createElement("div");
+    cell.classList.add("bingo-cell");
+    cell.textContent = num;
+    playerCardEl.appendChild(cell);
+  });
+}
 
-  ball.classList.remove("animate");
-  void ball.offsetWidth;
-  ball.classList.add("animate");
+joinBtn.addEventListener("click", () => {
+  const room = roomInput.value.toUpperCase();
+  const name = playerNameInput.value || "Player";
+  if(!room) return alert("Enter room code");
+
+  playerCard = generateCard();
+  renderCard();
+
+  const playerRef = ref(db, `rooms/${room}/players/${name}`);
+  set(playerRef, { card: playerCard });
+
+  // Listen for numbers called
+  const roomRef = ref(db, `rooms/${room}`);
+  onValue(roomRef, snapshot => {
+    const data = snapshot.val();
+    if(!data) return;
+
+    const currentNum = data.currentNumber;
+    numberEl.textContent = currentNum;
+
+    ball.classList.remove("animate");
+    void ball.offsetWidth;
+    ball.classList.add("animate");
+
+    // Highlight cells if called
+    const cells = playerCardEl.querySelectorAll(".bingo-cell");
+    cells.forEach(cell => {
+      if(data.calledNumbers.includes(parseInt(cell.textContent))){
+        cell.classList.add("called");
+      }
+    });
+  });
 });
+

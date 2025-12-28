@@ -2,23 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Habesha Bingo – Host</title>
+  <title>Habesha Bingo 🎱</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Habesha Bingo 🎱 (Host)</h1>
-<p>Room Code: <strong id="roomCode"></strong></p>
+<h1>Habesha Bingo 🎱</h1>
 
-<div id="bingo-ball">
-  <span id="number">--</span>
+<!-- Host Panel -->
+<div id="hostSection">
+  <h2>Host Panel</h2>
+  <p>Room Code: <strong id="roomCode"></strong></p>
+  <div id="bingo-ball">
+    <span id="number">--</span>
+  </div>
+  <button id="callBtn">Call Number</button>
+  <h3>Called Numbers:</h3>
+  <div id="calledNumbers"></div>
 </div>
 
-<button id="callBtn">Call Number</button>
+<hr>
+
+<!-- Player Panel -->
+<div id="playerSection">
+  <h2>Player Panel</h2>
+  <input id="playerName" placeholder="Enter Your Name">
+  <input id="roomInput" placeholder="Enter Room Code">
+  <button id="joinBtn">Join Game</button>
+  <div id="playerCard" class="bingo-card"></div>
+</div>
 
 <script type="module" src="host.js"></script>
+<script type="module" src="player.js"></script>
 </body>
 </html>
+
 
 
 

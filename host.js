@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-/* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyBO4GXSRRmWgXwMMRt-wtlQNZpWbz5GH24",
   authDomain: "habesha-bingo-bf60a.firebaseapp.com",
@@ -19,6 +18,7 @@ const callBtn = document.getElementById("callBtn");
 const numberEl = document.getElementById("number");
 const ball = document.getElementById("bingo-ball");
 const roomCodeEl = document.getElementById("roomCode");
+const calledNumbersEl = document.getElementById("calledNumbers");
 
 const roomCode = Math.random().toString(36).substring(2,7).toUpperCase();
 roomCodeEl.textContent = roomCode;
@@ -38,12 +38,17 @@ callBtn.addEventListener("click", () => {
 
   calledNumbers.push(num);
 
+  // Animate ball
   ball.classList.remove("animate");
   void ball.offsetWidth;
   ball.classList.add("animate");
 
   numberEl.textContent = num;
 
+  // Update called numbers list visually
+  calledNumbersEl.textContent = calledNumbers.join(", ");
+
+  // Update Firebase
   set(ref(db, `rooms/${roomCode}`), {
     currentNumber: num,
     calledNumbers: calledNumbers
