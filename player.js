@@ -1,78 +1,55 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+const socket=io();
+const ranges={B:[1,15],I:[16,30],N:[31,45],G:[46,60],O:[61,75]};
+let card=[], cells=[], coins=10;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBO4GXSRRmWgXwMMRt-wtlQNZpWbz5GH24",
-  authDomain: "habesha-bingo-bf60a.firebaseapp.com",
-  databaseURL: "https://habesha-bingo-bf60a-default-rtdb.firebaseio.com",
-  projectId: "habesha-bingo-bf60a",
-  storageBucket: "habesha-bingo-bf60a.firebasestorage.app",
-  messagingSenderId: "787934477608",
-  appId: "1:787934477608:web:b9a201fae3a2241d"
+document.getElementById("joinGame").onclick=()=>{
+  const name=document.getElementById("playerName").value;
+  socket.emit("joinPlayer",name);
+  createCard();
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const joinBtn = document.getElementById("joinBtn");
-const roomInput = document.getElementById("roomInput");
-const playerNameInput = document.getElementById("playerName");
-const playerCardEl = document.getElementById("playerCard");
-const ball = document.getElementById("playerBall");
-const numberEl = document.getElementById("playerNumber");
-
-let playerCard = [];
-
-function generateCard() {
-  const numbers = [];
-  while(numbers.length < 25){
-    const n = Math.floor(Math.random()*75)+1;
-    if(!numbers.includes(n)) numbers.push(n);
-  }
-  return numbers;
-}
-
-function renderCard() {
-  playerCardEl.innerHTML = "";
-  playerCard.forEach(num => {
-    const cell = document.createElement("div");
-    cell.classList.add("bingo-cell");
-    cell.textContent = num;
-    playerCardEl.appendChild(cell);
+function createCard(){
+  const div=document.getElementById("bingoCard"); div.innerHTML=""; card=[]; cells=[];
+  ["B","I","N","G","O"].forEach(col=>{
+    for(let i=0;i<5;i++){
+      const cell=document.createElement("div"); cell.className="cell";
+      cell.onclick=()=>pick(cell,col); div.appendChild(cell); cells.push(cell);
+    }
   });
 }
 
-joinBtn.addEventListener("click", () => {
-  const room = roomInput.value.toUpperCase();
-  const name = playerNameInput.value || "Player";
-  if(!room) return alert("Enter room code");
+function pick(cell,col){
+  if(cell.textContent) return;
+  const [min,max]=ranges[col]; const num=prompt(`Choose ${col} (${min}-${max})`);
+  if(num>=min&&num<=max){ cell.textContent=num; card.push(Number(num)); }
+}
 
-  playerCard = generateCard();
-  renderCard();
+document.getElementById("lockCard").onclick=()=>{
+  if(card.length===25) socket.emit("lockCard",card); else alert("Complete your 5x5 card before locking!");
+};
 
-  const playerRef = ref(db, `rooms/${room}/players/${name}`);
-  set(playerRef, { card: playerCard });
+document.getElementById("bingoBtn").onclick=()=>socket.emit("claimBingo");
 
-  // Listen for numbers called
-  const roomRef = ref(db, `rooms/${room}`);
-  onValue(roomRef, snapshot => {
-    const data = snapshot.val();
-    if(!data) return;
-
-    const currentNum = data.currentNumber;
-    numberEl.textContent = currentNum;
-
-    ball.classList.remove("animate");
-    void ball.offsetWidth;
-    ball.classList.add("animate");
-
-    // Highlight cells if called
-    const cells = playerCardEl.querySelectorAll(".bingo-cell");
-    cells.forEach(cell => {
-      if(data.calledNumbers.includes(parseInt(cell.textContent))){
-        cell.classList.add("called");
-      }
-    });
-  });
+socket.on("numberCalled", num=>{
+  document.getElementById("status").innerText=`Called: ${num}`;
+  const letter=["B","I","N","G","O"][(num-1)/15|0];
+  const msg=new SpeechSynthesisUtterance(`${letter} ${num}`);
+  msg.rate=1; msg.pitch=1.1; speechSynthesis.speak(msg);
 });
+
+socket.on("invalidBingo", ()=>alert("Not a valid BINGO yet!"));
+
+socket.on("gameWon", data=>{
+  document.getElementById("status").innerText=`🎉 BINGO!! ${data.name} WINS! 🎉`;
+  coins=data.coins; document.getElementById("coins").innerText=coins;
+  highlightCells(data.highlight);
+});
+
+function highlightCells(indexes){
+  cells.forEach((c,i)=>c.classList.remove("highlight"));
+  indexes.forEach(i=>cells[i].classList.add("highlight"));
+}
+
+
+
 

@@ -1,201 +1,79 @@
-// ======================
-// Complete Multiplayer Bingo Script
-// ======================
+const express=require("express");
+const http=require("http");
+const {Server}=require("socket.io");
 
-let roomId = "";
-let playerId = "";
+const app=express();
+const server=http.createServer(app);
+const io=new Server(server);
 
-// HTML elements
-const createRoomBtn = document.getElementById("createRoomBtn");
-const joinRoomBtn = document.getElementById("joinRoomBtn");
-const joinRoomInput = document.getElementById("joinRoomInput");
-const lobby = document.getElementById("lobby");
-const gameDiv = document.getElementById("game");
-const roomIdDisplay = document.getElementById("roomIdDisplay");
-const boardDiv = document.getElementById("board");
-const currentTurnSpan = document.getElementById("currentTurn");
-const callNumberBtn = document.getElementById("callNumberBtn");
-const calledNumberDisplay = document.getElementById("calledNumber");
-const bingoSound = document.getElementById("bingoSound");
+app.use(express.static(__dirname));
 
-// Numbers
-let numbersToCall = Array.from({length:25}, (_,i)=>i+1);
-let calledNumbers = [];
+let hostId=null;
+let players={};
+let calledNumbers=[];
+let gameOver=false;
 
-// ======= CREATE ROOM =======
-createRoomBtn.addEventListener("click", () => {
-  roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-  playerId = "Player1";
+io.on("connection", socket=>{
 
-  const initialBoard = Array.from({ length: 25 }, (_, i) => i + 1);
-  initialBoard[12] = "X"; // Free center
-
-  database.ref(`rooms/${roomId}`).set({
-    board: initialBoard,
-    players: { Player1: playerId },
-    turn: playerId,
-    calledNumbers: []
+  socket.on("registerHost", ()=>{
+    if(!hostId){ hostId=socket.id; socket.emit("hostApproved"); console.log("Host connected"); }
+    else socket.disconnect(true);
   });
 
-  startGame();
+  socket.on("joinPlayer", name=>{
+    players[socket.id]={name, card:[], coins:10};
+    updatePlayers();
+  });
+
+  socket.on("lockCard", card=>{ if(players[socket.id]) players[socket.id].card=card; });
+
+  socket.on("callNumber", num=>{
+    if(socket.id!==hostId||gameOver) return;
+    if(!calledNumbers.includes(num)){
+      calledNumbers.push(num);
+      io.emit("numberCalled", num);
+    }
+  });
+
+  socket.on("claimBingo", ()=>{
+    if(gameOver) return;
+    const player=players[socket.id]; if(!player) return;
+    const highlight=getWinningCells(player.card);
+    if(highlight.length){
+      gameOver=true;
+      player.coins+=5;
+      io.emit("gameWon",{name:player.name, highlight, coins:player.coins});
+    } else socket.emit("invalidBingo");
+  });
+
+  socket.on("disconnect", ()=>{
+    if(socket.id===hostId) hostId=null;
+    delete players[socket.id];
+    updatePlayers();
+  });
+
 });
 
-// ======= JOIN ROOM =======
-joinRoomBtn.addEventListener("click", () => {
-  roomId = joinRoomInput.value.toUpperCase();
-  playerId = "Player2";
-
-  database.ref(`rooms/${roomId}/players`).update({ Player2: playerId });
-  startGame();
-});
-
-// ======= START GAME =======
-function startGame() {
-  lobby.style.display = "none";
-  gameDiv.style.display = "block";
-  roomIdDisplay.textContent = roomId;
-
-  const roomRef = database.ref(`rooms/${roomId}`);
-  
-  // Listen for room changes
-  roomRef.on("value", snapshot => {
-    const data = snapshot.val();
-    if (!data) return;
-
-    renderBoard(data.board);
-    currentTurnSpan.textContent = data.turn;
-
-    if(data.turn === playerId){
-      currentTurnSpan.style.color = "green";
-    } else {
-      currentTurnSpan.style.color = "red";
-    }
-
-    // Update numbers from Firebase
-    calledNumbers = data.calledNumbers || [];
-    if(calledNumbers.length > 0){
-      const last = calledNumbers[calledNumbers.length-1];
-      displayCalledNumber(last);
-      highlightNumberOnBoard(last);
-      // Remove called number from numbersToCall to prevent repeat
-      numbersToCall = numbersToCall.filter(n => n !== last);
-    }
-  });
+function updatePlayers(){
+  const list=Object.values(players).map(p=>p.name);
+  io.emit("playerList", list);
 }
 
-// ======= MARK CELL =======
-function markCell(index) {
-  const turnRef = database.ref(`rooms/${roomId}/turn`);
-  turnRef.once("value").then(snapshot => {
-    if (snapshot.val() !== playerId) return; // Not your turn
-
-    const cellRef = database.ref(`rooms/${roomId}/board/${index}`);
-    cellRef.set("X");
-
-    const nextTurn = playerId === "Player1" ? "Player2" : "Player1";
-    database.ref(`rooms/${roomId}/turn`).set(nextTurn);
-  });
+function getWinningCells(card){
+  if(!card||card.length!==25) return [];
+  const matrix=[]; for(let i=0;i<5;i++) matrix[i]=card.slice(i*5,i*5+5);
+  for(let r=0;r<5;r++) if(matrix[r].every(n=>calledNumbers.includes(n))) return matrix[r].map((_,i)=>r*5+i);
+  for(let c=0;c<5;c++){ let win=true; for(let r=0;r<5;r++) if(!calledNumbers.includes(matrix[r][c])) win=false; if(win) return [0,1,2,3,4].map(i=>i*5+c); }
+  let diag1=true, diag2=true;
+  for(let i=0;i<5;i++){ if(!calledNumbers.includes(matrix[i][i])) diag1=false; if(!calledNumbers.includes(matrix[i][4-i])) diag2=false; }
+  if(diag1) return [0,6,12,18,24]; if(diag2) return [4,8,12,16,20];
+  return [];
 }
 
-// ======= CHECK BINGO =======
-function checkBingo(board) {
-  const size = 5;
-  let winnerCells = [];
+server.listen(3000, ()=>console.log("Habesha Bingo running on port 3000"));
 
-  // Rows
-  for (let r=0; r<size; r++){
-    let row = [], bingo=true;
-    for(let c=0;c<size;c++){
-      const index = r*size + c;
-      row.push(index);
-      if(board[index]!=="X") bingo=false;
-    }
-    if(bingo) winnerCells=row;
-  }
 
-  // Columns
-  for (let c=0;c<size;c++){
-    let col=[], bingo=true;
-    for(let r=0;r<size;r++){
-      const index = r*size + c;
-      col.push(index);
-      if(board[index]!=="X") bingo=false;
-    }
-    if(bingo) winnerCells=col;
-  }
 
-  // Diagonals
-  let diag1=[], diag2=[], bingo1=true, bingo2=true;
-  for(let i=0;i<size;i++){
-    diag1.push(i*size+i);
-    diag2.push(i*size+(size-1-i));
-    if(board[i*size+i]!=="X") bingo1=false;
-    if(board[i*size+(size-1-i)]!=="X") bingo2=false;
-  }
-  if(bingo1) winnerCells=diag1;
-  if(bingo2) winnerCells=diag2;
-
-  return winnerCells;
-}
-
-// ======= RENDER BOARD =======
-function renderBoard(board){
-  boardDiv.innerHTML="";
-  const winningCells = checkBingo(board);
-
-  board.forEach((num,i)=>{
-    const cell = document.createElement("div");
-    cell.className="cell";
-
-    if(num==="X") cell.classList.add("marked");
-    cell.textContent=num;
-
-    if(winningCells.includes(i)){
-      cell.style.background="#FFD700";
-      cell.style.color="black";
-      cell.style.transform="scale(1.2)";
-    }
-
-    cell.addEventListener("click",()=>markCell(i));
-    boardDiv.appendChild(cell);
-  });
-
-  if(winningCells.length>0){
-    setTimeout(()=>alert(`Bingo! ${playerId} wins! 🎉`),100);
-  }
-}
-
-// ======= NUMBER CALLER =======
-callNumberBtn.addEventListener("click", callNumber);
-
-function callNumber(){
-  if(numbersToCall.length===0) return alert("All numbers called!");
-  const index = Math.floor(Math.random()*numbersToCall.length);
-  const number = numbersToCall.splice(index,1)[0];
-
-  // Save to Firebase
-  const calledRef = database.ref(`rooms/${roomId}/calledNumbers`);
-  calledRef.once("value").then(snapshot => {
-    const current = snapshot.val() || [];
-    current.push(number);
-    calledRef.set(current);
-  });
-}
-
-function displayCalledNumber(number){
-  calledNumberDisplay.textContent=`Number Called: ${number}`;
-  bingoSound.play();
-}
-
-function highlightNumberOnBoard(number){
-  const cells = boardDiv.querySelectorAll(".cell");
-  cells.forEach(cell=>{
-    if(cell.textContent==number){
-      cell.style.background="#FF5722";
-      setTimeout(()=>cell.style.background="#eee",500);
-    }
-  });
-}
 
 
 

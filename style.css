@@ -1,89 +1,24 @@
 body {
-  background: #f0e6d2;
-  color: #2b2b2b;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle, #1b1b2f, #3a0c42);
+  color: #fff;
   text-align: center;
   margin: 0;
   padding: 0;
 }
-
-h1 {
-  margin-top: 20px;
-  color: #b22222; /* Habesha red */
+h1,h2,h3{ margin:10px 0;}
+#bingoCard{ display:grid; grid-template-columns:repeat(5,60px); gap:5px; justify-content:center; margin:20px auto;}
+.cell{ width:60px; height:60px; border-radius:8px; border:2px solid #ffd700; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; cursor:pointer; background:#2c2c54; color:#fff; transition: all 0.3s;}
+.cell.highlight{ background:#ffd700; color:#000; transform:scale(1.2);}
+button,input{ padding:8px 12px; margin:5px; font-size:16px; border-radius:8px; border:none; cursor:pointer;}
+button{ background:#ff4d4d; color:#fff;}
+button:hover{ background:#ff1a1a;}
+input{ width:150px;}
+@media(max-width:500px){
+  #bingoCard{grid-template-columns:repeat(5,40px);gap:3px;}
+  .cell{width:40px;height:40px;font-size:14px;}
+  input,button{font-size:14px;padding:6px 10px;}
 }
-
-h2, h3 { margin: 10px 0; }
-
-button, input {
-  padding: 10px;
-  font-size: 16px;
-  margin: 5px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #b22222;
-  color: white;
-}
-
-#bingo-ball, #playerBall {
-  width: 160px;
-  height: 160px;
-  margin: 20px auto;
-  border-radius: 50%;
-  background: radial-gradient(circle at top, #ffe599, #ffcc00);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 50px;
-  font-weight: bold;
-  color: black;
-}
-
-.animate {
-  animation: pop 0.6s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* Bingo Cards */
-.bingo-card {
-  display: grid;
-  grid-template-columns: repeat(5, 70px);
-  gap: 8px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.bingo-cell {
-  width: 70px;
-  height: 70px;
-  background: #fff2cc;
-  color: #2b2b2b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 20px;
-  border-radius: 10px;
-  border: 2px solid #b22222; /* Habesha red border */
-  cursor: default;
-  transition: all 0.3s ease;
-}
-
-.bingo-cell.called {
-  background: #00cc44;
-  color: white;
-  transform: scale(1.1);
-  font-size: 22px;
-}
-
 
 
 

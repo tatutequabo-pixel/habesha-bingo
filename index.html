@@ -1,65 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Habesha Bingo 🎱</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>🎰 Habesha Bingo 🎰</title>
+<link rel="stylesheet" href="style.css">
+<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 
-<h1>Habesha Bingo 🎱</h1>
+<h1>🎰 Habesha Bingo 🎰</h1>
 
-<!-- Choice Screen -->
-<div id="choiceScreen">
-  <h2>Start Game</h2>
-  <button id="startHost">Start as Host</button>
-  <button id="joinPlayer">Join as Player</button>
-</div>
-
-<!-- Host Panel -->
-<div id="hostSection" style="display:none">
+<!-- HOST PANEL -->
+<div id="hostPanel" style="display:none;">
   <h2>Host Panel</h2>
-  <p>Room Code: <strong id="roomCode"></strong></p>
-  <div id="bingo-ball">
-    <span id="number">--</span>
-  </div>
-  <button id="callBtn">Call Number</button>
-  <h3>Called Numbers:</h3>
-  <div id="calledNumbers"></div>
+  <button id="callNumber">Call Number</button>
+  <h1 id="currentCall">---</h1>
+  <h3>Players Joined</h3>
+  <ul id="players"></ul>
+  <button class="backHome">Return Home</button>
 </div>
 
-<!-- Player Panel -->
-<div id="playerSection" style="display:none">
+<!-- PLAYER PANEL -->
+<div id="playerPanel" style="display:none;">
   <h2>Player Panel</h2>
-  <input id="playerName" placeholder="Enter Your Name">
-  <input id="roomInput" placeholder="Enter Room Code">
-  <button id="joinBtn">Join Game</button>
-  <div id="playerCard" class="bingo-card"></div>
-  <div id="playerBall">
-    <span id="playerNumber">--</span>
-  </div>
+  <input id="playerName" placeholder="Your name">
+  <button id="joinGame">Join Game</button>
+
+  <div id="bingoCard"></div>
+
+  <button id="lockCard">Lock Card</button>
+  <button id="bingoBtn">BINGO!</button>
+
+  <h2 id="status"></h2>
+
+  <div id="coinsPanel">Coins: <span id="coins">10</span></div>
+  <button id="donateBtn">Donate</button>
+  <button class="backHome">Return Home</button>
 </div>
 
 <script>
-const choiceScreen = document.getElementById('choiceScreen');
-const hostSection = document.getElementById('hostSection');
-const playerSection = document.getElementById('playerSection');
+const socket = io();
+const params = new URLSearchParams(window.location.search);
+const isHost = params.get("host")==="1";
 
-document.getElementById('startHost').addEventListener('click', () => {
-  choiceScreen.style.display = 'none';
-  hostSection.style.display = 'block';
-  import('./host.js');
+if(isHost){
+  document.getElementById("hostPanel").style.display="block";
+  socket.emit("registerHost");
+  const hostScript=document.createElement("script"); hostScript.src="host.js"; document.body.appendChild(hostScript);
+}else{
+  document.getElementById("playerPanel").style.display="block";
+  const playerScript=document.createElement("script"); playerScript.src="player.js"; document.body.appendChild(playerScript);
+}
+
+document.querySelectorAll(".backHome").forEach(btn=>{
+  btn.onclick=()=>{ window.location.href="index.html"; };
 });
 
-document.getElementById('joinPlayer').addEventListener('click', () => {
-  choiceScreen.style.display = 'none';
-  playerSection.style.display = 'block';
-  import('./player.js');
-});
+document.getElementById("donateBtn").onclick=()=>{
+  alert("Redirect to PayPal/Patreon donation link here");
+};
 </script>
-
 </body>
 </html>
+
+
+
+
+
+
 
 
 
