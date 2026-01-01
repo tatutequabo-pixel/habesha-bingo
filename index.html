@@ -10,6 +10,14 @@
 
 <h1>🎰 Habesha Bingo 🎰</h1>
 
+<!-- LOGIN SCREEN FOR HOST -->
+<div id="loginScreen">
+  <h2>Host Login</h2>
+  <input type="password" id="hostPassword" placeholder="Enter host password">
+  <button id="hostLoginBtn">Login as Host</button>
+  <p>Leave blank if you are a player.</p>
+</div>
+
 <!-- HOST PANEL -->
 <div id="hostPanel" style="display:none;">
   <h2>Host Panel</h2>
@@ -21,7 +29,7 @@
 </div>
 
 <!-- PLAYER PANEL -->
-<div id="playerPanel">
+<div id="playerPanel" style="display:none;">
   <h2>Player Panel</h2>
   <input id="playerName" placeholder="Your name">
   <button id="joinGame">Join Game</button>
@@ -40,35 +48,41 @@
 <script>
 const socket = io();
 
-// ✅ PROMPT FOR HOST PASSWORD
-let isHost = false;
-const password = prompt("Enter host password (leave blank for player):");
-if(password === "Hanilove1"){  // your secret here
-  isHost = true;
-}
+// ===== HOST LOGIN LOGIC =====
+const loginScreen = document.getElementById("loginScreen");
+const hostPasswordInput = document.getElementById("hostPassword");
+const hostLoginBtn = document.getElementById("hostLoginBtn");
 
-if(isHost){
-  // SHOW HOST PANEL
-  document.getElementById("hostPanel").style.display = "block";
-  const hostScript = document.createElement("script");
-  hostScript.src = "host.js";
-  document.body.appendChild(hostScript);
-  socket.emit("registerHost");
-} else {
-  // SHOW PLAYER PANEL
-  const playerScript = document.createElement("script");
-  playerScript.src = "player.js";
-  document.body.appendChild(playerScript);
-}
+hostLoginBtn.onclick = () => {
+  const password = hostPasswordInput.value;
+  if(password === "Hanilove1"){
+    loginScreen.style.display = "none";
+    document.getElementById("hostPanel").style.display = "block";
+    const hostScript = document.createElement("script");
+    hostScript.src = "host.js";
+    document.body.appendChild(hostScript);
+    socket.emit("registerHost");
+  } else if(password === ""){
+    // Player chooses to continue without host password
+    loginScreen.style.display = "none";
+    document.getElementById("playerPanel").style.display = "block";
+    const playerScript = document.createElement("script");
+    playerScript.src = "player.js";
+    document.body.appendChild(playerScript);
+  } else {
+    alert("Incorrect password!");
+  }
+};
 
-// Donate button (redirect to PayPal/Patreon)
-document.getElementById("donateBtn").onclick=()=>{
+// Donate button
+document.getElementById("donateBtn").onclick = () => {
   alert("Redirect to your donation page here!");
 };
 </script>
 
 </body>
 </html>
+
 
 
 
