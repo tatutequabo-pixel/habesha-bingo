@@ -14,10 +14,13 @@ let calledNumbers=[];
 let gameOver=false;
 
 io.on("connection", socket=>{
-
+  
   socket.on("registerHost", ()=>{
-    if(!hostId){ hostId=socket.id; socket.emit("hostApproved"); console.log("Host connected"); }
-    else socket.disconnect(true);
+    if(!hostId){ 
+      hostId=socket.id; 
+      socket.emit("hostApproved"); 
+      console.log("Host connected"); 
+    } else socket.disconnect(true);
   });
 
   socket.on("joinPlayer", name=>{
@@ -25,7 +28,9 @@ io.on("connection", socket=>{
     updatePlayers();
   });
 
-  socket.on("lockCard", card=>{ if(players[socket.id]) players[socket.id].card=card; });
+  socket.on("lockCard", card=>{
+    if(players[socket.id]) players[socket.id].card=card;
+  });
 
   socket.on("callNumber", num=>{
     if(socket.id!==hostId||gameOver) return;
@@ -70,7 +75,8 @@ function getWinningCells(card){
   return [];
 }
 
-server.listen(3000, ()=>console.log("Habesha Bingo running on port 3000"));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, ()=>console.log(`Habesha Bingo running on port ${PORT}`));
 
 
 
