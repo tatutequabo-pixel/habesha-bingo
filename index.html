@@ -17,7 +17,7 @@
   <h1 id="currentCall">---</h1>
   <h3>Players Joined</h3>
   <ul id="players"></ul>
-  <button class="backHome" onclick="window.location.href='/'">Return Home</button>
+  <button class="backHome" onclick="window.location.reload()">Return Home</button>
 </div>
 
 <!-- PLAYER PANEL -->
@@ -39,26 +39,31 @@
 
 <script>
 const socket = io();
-const params = new URLSearchParams(window.location.search);
 
-// ✅ NEW SECRET FOR HOST
-const isHost = params.get("secret") === "Hanilove1";
+// ✅ PROMPT FOR HOST PASSWORD
+let isHost = false;
+const password = prompt("Enter host password (leave blank for player):");
+if(password === "Hanilove1"){  // your secret here
+  isHost = true;
+}
 
 if(isHost){
+  // SHOW HOST PANEL
   document.getElementById("hostPanel").style.display = "block";
   const hostScript = document.createElement("script");
   hostScript.src = "host.js";
   document.body.appendChild(hostScript);
   socket.emit("registerHost");
 } else {
+  // SHOW PLAYER PANEL
   const playerScript = document.createElement("script");
   playerScript.src = "player.js";
   document.body.appendChild(playerScript);
 }
 
-// Donate button
+// Donate button (redirect to PayPal/Patreon)
 document.getElementById("donateBtn").onclick=()=>{
-  alert("Redirect to PayPal/Patreon donation link here");
+  alert("Redirect to your donation page here!");
 };
 </script>
 
