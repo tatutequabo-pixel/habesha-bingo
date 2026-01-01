@@ -46,42 +46,52 @@
 </div>
 
 <script>
-const socket = io();
+document.addEventListener("DOMContentLoaded", () => {
+  const socket = io();
 
-// ===== HOST LOGIN LOGIC =====
-const loginScreen = document.getElementById("loginScreen");
-const hostPasswordInput = document.getElementById("hostPassword");
-const hostLoginBtn = document.getElementById("hostLoginBtn");
+  const loginScreen = document.getElementById("loginScreen");
+  const hostPasswordInput = document.getElementById("hostPassword");
+  const hostLoginBtn = document.getElementById("hostLoginBtn");
 
-hostLoginBtn.onclick = () => {
-  const password = hostPasswordInput.value;
-  if(password === "Hanilove1"){
-    loginScreen.style.display = "none";
-    document.getElementById("hostPanel").style.display = "block";
-    const hostScript = document.createElement("script");
-    hostScript.src = "host.js";
-    document.body.appendChild(hostScript);
-    socket.emit("registerHost");
-  } else if(password === ""){
-    // Player chooses to continue without host password
-    loginScreen.style.display = "none";
-    document.getElementById("playerPanel").style.display = "block";
-    const playerScript = document.createElement("script");
-    playerScript.src = "player.js";
-    document.body.appendChild(playerScript);
-  } else {
-    alert("Incorrect password!");
-  }
-};
+  hostLoginBtn.onclick = () => {
+    const password = hostPasswordInput.value.trim();
+    if(password === "Hanilove1"){  // <-- your host secret
+      // Show host panel
+      loginScreen.style.display = "none";
+      document.getElementById("hostPanel").style.display = "block";
 
-// Donate button
-document.getElementById("donateBtn").onclick = () => {
-  alert("Redirect to your donation page here!");
-};
+      // Load host.js dynamically
+      const hostScript = document.createElement("script");
+      hostScript.src = "host.js";
+      document.body.appendChild(hostScript);
+
+      socket.emit("registerHost");
+
+    } else if(password === ""){
+      // Player panel
+      loginScreen.style.display = "none";
+      document.getElementById("playerPanel").style.display = "block";
+
+      // Load player.js dynamically
+      const playerScript = document.createElement("script");
+      playerScript.src = "player.js";
+      document.body.appendChild(playerScript);
+
+    } else {
+      alert("Incorrect password!");
+    }
+  };
+
+  // Donate button
+  document.getElementById("donateBtn").onclick = () => {
+    alert("Redirect to your donation page here!");
+  };
+});
 </script>
 
 </body>
 </html>
+
 
 
 
