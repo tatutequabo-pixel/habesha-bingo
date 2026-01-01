@@ -6,9 +6,25 @@ body {
   margin: 0;
   padding: 0;
 }
+
 h1,h2,h3{ margin:10px 0;}
-#bingoCard{ display:grid; grid-template-columns:repeat(5,60px); gap:5px; justify-content:center; margin:20px auto;}
-.cell{ width:60px; height:60px; border-radius:8px; border:2px solid #ffd700; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; cursor:pointer; background:#2c2c54; color:#fff; transition: all 0.3s;}
+#bingoCard{
+  display:grid; 
+  grid-template-columns:repeat(5,60px); 
+  gap:5px; 
+  justify-content:center; 
+  margin:20px auto;
+}
+.cell{
+  width:60px; height:60px; 
+  border-radius:8px; 
+  border:2px solid #ffd700; 
+  display:flex; align-items:center; justify-content:center; 
+  font-weight:bold; font-size:16px; 
+  cursor:pointer; 
+  background:#2c2c54; color:#fff; 
+  transition: all 0.3s;
+}
 .cell.highlight{ background:#ffd700; color:#000; transform:scale(1.2);}
 button,input{ padding:8px 12px; margin:5px; font-size:16px; border-radius:8px; border:none; cursor:pointer;}
 button{ background:#ff4d4d; color:#fff;}

@@ -1,4 +1,5 @@
 const socket=io();
+
 function getLetter(n){ if(n<=15) return"B"; if(n<=30) return"I"; if(n<=45) return"N"; if(n<=60) return"G"; return"O"; }
 
 const callBtn = document.getElementById("callNumber");
@@ -14,7 +15,8 @@ socket.on("numberCalled", num=>{
   const letter=getLetter(num);
   currentCall.innerText=`${letter} ${num}`;
   const msg=new SpeechSynthesisUtterance(`${letter} ${num}`);
-  msg.rate=1.1; msg.pitch=1.2; window.speechSynthesis.speak(msg);
+  msg.rate=1.1; msg.pitch=1.2; 
+  window.speechSynthesis.speak(msg);
 });
 
 socket.on("playerList", list=>{

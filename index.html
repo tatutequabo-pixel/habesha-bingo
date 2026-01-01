@@ -10,6 +10,16 @@
 
 <h1>🎰 Habesha Bingo 🎰</h1>
 
+<!-- HOST PANEL -->
+<div id="hostPanel" style="display:none;">
+  <h2>Host Panel</h2>
+  <button id="callNumber">Call Number</button>
+  <h1 id="currentCall">---</h1>
+  <h3>Players Joined</h3>
+  <ul id="players"></ul>
+  <button class="backHome" onclick="window.location.href='/'">Return Home</button>
+</div>
+
 <!-- PLAYER PANEL -->
 <div id="playerPanel">
   <h2>Player Panel</h2>
@@ -31,17 +41,18 @@
 const socket = io();
 const params = new URLSearchParams(window.location.search);
 
-// Only you can be host using secret key
-const isHost = params.get("secret") === "Hanilove1"; // CHANGE THIS TO YOUR SECRET
+// ✅ NEW SECRET FOR HOST
+const isHost = params.get("secret") === "Hanilove1";
 
 if(isHost){
-  const hostScript=document.createElement("script");
-  hostScript.src="host.js";
+  document.getElementById("hostPanel").style.display = "block";
+  const hostScript = document.createElement("script");
+  hostScript.src = "host.js";
   document.body.appendChild(hostScript);
   socket.emit("registerHost");
 } else {
-  const playerScript=document.createElement("script");
-  playerScript.src="player.js";
+  const playerScript = document.createElement("script");
+  playerScript.src = "player.js";
   document.body.appendChild(playerScript);
 }
 
@@ -53,6 +64,8 @@ document.getElementById("donateBtn").onclick=()=>{
 
 </body>
 </html>
+
+
 
 
 
