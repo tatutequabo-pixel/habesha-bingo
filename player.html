@@ -1,18 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Player Board - Habesha Bingo</title>
-  <link rel="stylesheet" href="style.css">
+    <title>Habesha Bingo - Player</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <img id="logo" src="logo.png" alt="Habesha Bingo Logo">
-  <h1>Player Board</h1>
+    <h1>Player Board</h1>
 
-  <div id="numbersBoard"></div>
-  <button id="bingoBtn">BINGO!</button>
+    <div id="board"></div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="player.js"></script>
+    <h2>Numbers Called</h2>
+    <ul id="numbersCalled"></ul>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="player.js"></script>
+    <script>
+        // Generate Bingo board
+        const boardDiv = document.getElementById('board');
+        const cols = ['B','I','N','G','O'];
+        const board = [];
+
+        for(let c=0; c<5; c++){
+            const colDiv = document.createElement('div');
+            colDiv.classList.add('column');
+            colDiv.innerHTML = `<h3>${cols[c]}</h3>`;
+            let start = c*15 + 1;
+            let end = c*15 + 15;
+            for(let i=start; i<=end; i++){
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                if(c===2 && i===Math.floor((start+end)/2)){
+                    cell.innerText = "FREE";
+                    cell.classList.add('free');
+                } else {
+                    cell.innerText = i;
+                }
+                colDiv.appendChild(cell);
+            }
+            boardDiv.appendChild(colDiv);
+        }
+    </script>
 </body>
 </html>

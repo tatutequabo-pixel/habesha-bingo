@@ -1,48 +1,61 @@
 body {
-  font-family: 'Arial', sans-serif;
-  text-align: center;
-  background: radial-gradient(circle, #2b2b2b, #000);
-  color: gold;
+    background: radial-gradient(circle, #1e1e1e, #111);
+    color: #fff;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
 }
 
-#logo {
-  display: block;
-  margin: 20px auto;
-  width: 250px;
-  height: auto;
-  box-shadow: 0 0 20px gold, 0 0 40px orange;
-  border-radius: 15px;
+.logo {
+    width: 200px;
+    margin-top: 20px;
 }
 
-h1 {
-  font-size: 2em;
-  text-shadow: 0 0 10px gold;
+.container, #controls {
+    margin: 20px auto;
 }
 
-button {
-  font-size: 1.2em;
-  padding: 10px 20px;
-  margin: 10px;
-  background: gold;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button:hover {
-  background: orange;
-  box-shadow: 0 0 10px gold;
+button, .player-btn {
+    padding: 10px 20px;
+    margin: 5px;
+    background: gold;
+    color: black;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
 }
 
-.called-number {
-  display: inline-block;
-  margin: 5px;
-  padding: 10px;
-  border: 2px solid gold;
-  border-radius: 8px;
-  min-width: 30px;
-  background-color: rgba(255, 215, 0, 0.2);
-  color: gold;
+#board {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    margin: 0 5px;
+}
+
+.cell {
+    width: 40px;
+    height: 40px;
+    border: 1px solid gold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 2px;
+    font-weight: bold;
+    cursor: default;
+}
+
+.cell.free {
+    background-color: darkgreen;
+}
+
+.cell.called {
+    background-color: orange;
+    color: black;
 }
 
 

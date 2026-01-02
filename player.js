@@ -1,29 +1,29 @@
 const socket = io();
-const boardDiv = document.getElementById("numbersBoard");
-const bingoBtn = document.getElementById("bingoBtn");
 
-function displayNumber(num) {
-  const span = document.createElement("span");
-  span.textContent = num;
-  span.className = "called-number";
-  boardDiv.appendChild(span);
-}
+socket.on('numberCalled', num => {
+    const ul = document.getElementById('numbersCalled');
+    const li = document.createElement('li');
+    li.innerText = num;
+    ul.appendChild(li);
 
-socket.on("initNumbers", (numbers) => {
-  numbers.forEach(displayNumber);
+    // Highlight on board
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        if(cell.innerText == num){
+            cell.classList.add('called');
+        }
+    });
+
+    // Optional voice
+    const msg = new SpeechSynthesisUtterance(`Number ${num} called`);
+    window.speechSynthesis.speak(msg);
 });
 
-socket.on("updateNumbers", (num) => displayNumber(num));
-
-bingoBtn.addEventListener("click", () => {
-  const name = prompt("Enter your name:");
-  if(name) socket.emit("playerBingo", name);
+socket.on('gameReset', () => {
+    document.getElementById('numbersCalled').innerHTML = '';
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => cell.classList.remove('called'));
 });
-
-socket.on("bingoWinner", (name) => {
-  alert(`BINGO!! ${name} won!`);
-});
-
 
 
 

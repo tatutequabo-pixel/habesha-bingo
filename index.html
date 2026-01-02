@@ -1,31 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Habesha Bingo</title>
-  <link rel="stylesheet" href="style.css">
+    <title>Habesha Bingo</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <img id="logo" src="logo.png" alt="Habesha Bingo Logo">
-  <h1>Habesha Bingo</h1>
-  <div class="main-buttons">
-    <button onclick="goHost()">Host Login</button>
-    <button onclick="goPlayer()">Play as Player</button>
-  </div>
+    <div class="container">
+        <img src="logo.png" class="logo">
+        <h1>Habesha Bingo</h1>
 
-  <script>
-    function goHost() {
-      const password = prompt("Enter host password:");
-      if(password === "Hanilove1"){
-        window.location.href = "host.html";
-      } else alert("Wrong password!");
-    }
-    function goPlayer() {
-      window.location.href = "player.html";
-    }
-  </script>
+        <h2>Host Login</h2>
+        <input type="password" id="hostPass" placeholder="Enter host password">
+        <button onclick="loginHost()">Log in as Host</button>
+
+        <h2>Players</h2>
+        <a href="/player" class="player-btn">Enter as Player</a>
+    </div>
+
+    <script>
+        function loginHost() {
+            const pass = document.getElementById('hostPass').value;
+            window.location.href = `/host?password=${pass}`;
+        }
+    </script>
 </body>
 </html>
+
 
 
 

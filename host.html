@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Host Panel - Habesha Bingo</title>
-  <link rel="stylesheet" href="style.css">
+    <title>Habesha Bingo - Host</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <img id="logo" src="logo.png" alt="Habesha Bingo Logo">
-  <h1>Host Panel</h1>
+    <h1>Host Panel</h1>
+    <div id="controls">
+        <input type="number" id="number" placeholder="Call number 1-75">
+        <button onclick="callNumber()">Call Number</button>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
 
-  <button id="callBtn">Call Number</button>
-  <div id="calledNumbers"></div>
+    <h2>Called Numbers</h2>
+    <ul id="calledNumbers"></ul>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="host.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="host.js"></script>
 </body>
 </html>
-
