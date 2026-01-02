@@ -1,8 +1,8 @@
-// firebase.js
-// Connects your Node.js server to your existing Firebase project
+const { initializeApp } = require("firebase/app");
+const { getDatabase } = require("firebase/database");
 
-module.exports.config = {
-  apiKey: "YOUR_FIREBASE_API_KEY",                   // from Firebase console
+const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_API_KEY",
   authDomain: "habeshabingo.firebaseapp.com",
   databaseURL: "https://habeshabingo-default-rtdb.firebaseio.com",
   projectId: "habeshabingo",
@@ -10,4 +10,10 @@ module.exports.config = {
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+module.exports = { db };
+
 

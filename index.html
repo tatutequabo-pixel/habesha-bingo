@@ -2,83 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🎰 Habesha Bingo 🎰</title>
+<title>Habesha Bingo</title>
 <link rel="stylesheet" href="style.css">
 <script src="/socket.io/socket.io.js"></script>
+<script defer src="host.js"></script>
+<script defer src="player.js"></script>
 </head>
 <body>
 
-<h1 class="casino-title">🎰 Habesha Bingo 🎰</h1>
-
-<!-- LOGIN SCREEN FOR HOST -->
-<div id="loginScreen">
+<div id="loginPanel">
   <h2>Host Login</h2>
-  <input type="password" id="hostPassword" placeholder="Enter host password">
-  <button id="hostLoginBtn">Login as Host</button>
-  <p>Leave blank if you are a player.</p>
+  <input type="password" id="hostPassword" placeholder="Enter password"/>
+  <button id="loginHostBtn">Login as Host</button>
 </div>
 
-<!-- HOST PANEL -->
-<div id="hostPanel" style="display:none;">
+<div id="hostPanel" style="display:none">
   <h2>Host Panel</h2>
   <button id="callNumber">Call Number</button>
-  <h1 id="currentCall">---</h1>
-  <h3>Players Joined</h3>
-  <ul id="players"></ul>
-  <button class="backHome" onclick="window.location.reload()">Return Home</button>
+  <p>Current Number: <span id="currentCall"></span></p>
+  <h3>Players:</h3>
+  <div id="players"></div>
 </div>
 
-<!-- PLAYER PANEL -->
-<div id="playerPanel" style="display:none;">
+<div id="playerPanel">
   <h2>Player Panel</h2>
-  <input id="playerName" placeholder="Your name">
+  <input type="text" id="playerName" placeholder="Your name"/>
   <button id="joinGame">Join Game</button>
-
   <div id="bingoCard"></div>
-
   <button id="lockCard">Lock Card</button>
   <button id="bingoBtn">BINGO!</button>
-
-  <h2 id="status"></h2>
-
-  <div id="coinsPanel">Coins: <span id="coins">10</span></div>
-  <button id="donateBtn">Donate</button>
+  <p id="status"></p>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const socket = io();
+const secretKey = "Hanilove1";
+const loginBtn = document.getElementById("loginHostBtn");
+const hostPanel = document.getElementById("hostPanel");
+const loginPanel = document.getElementById("loginPanel");
 
-  const loginScreen = document.getElementById("loginScreen");
-  const hostPasswordInput = document.getElementById("hostPassword");
-  const hostLoginBtn = document.getElementById("hostLoginBtn");
-
-  hostLoginBtn.onclick = () => {
-    const password = hostPasswordInput.value.trim();
-    if(password === "Hanilove1"){  // host secret
-      loginScreen.style.display = "none";
-      document.getElementById("hostPanel").style.display = "block";
-      const hostScript = document.createElement("script");
-      hostScript.src = "host.js";
-      document.body.appendChild(hostScript);
-      socket.emit("registerHost");
-
-    } else if(password === ""){
-      loginScreen.style.display = "none";
-      document.getElementById("playerPanel").style.display = "block";
-      const playerScript = document.createElement("script");
-      playerScript.src = "player.js";
-      document.body.appendChild(playerScript);
-
-    } else {
-      alert("Incorrect password!");
-    }
-  };
-
-  document.getElementById("donateBtn").onclick = () => {
-    alert("Redirect to your donation page here!");
-  };
-});
+loginBtn.onclick = () => {
+  const pass = document.getElementById("hostPassword").value;
+  if(pass === secretKey){
+    hostPanel.style.display = "block";
+    loginPanel.style.display = "none";
+  } else {
+    alert("Incorrect password!");
+  }
+};
 </script>
 
 </body>
