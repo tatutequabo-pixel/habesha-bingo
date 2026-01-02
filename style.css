@@ -1,39 +1,27 @@
 body {
-  font-family: Arial, sans-serif;
-  background: radial-gradient(circle, #1b1b2f, #3a0c42);
+  background: radial-gradient(circle, #2e003e, #000);
   color: #fff;
+  font-family: "Arial Black", sans-serif;
   text-align: center;
-  margin: 0;
-  padding: 0;
 }
 
-h1,h2,h3{ margin:10px 0;}
-#bingoCard{
-  display:grid; 
-  grid-template-columns:repeat(5,60px); 
-  gap:5px; 
-  justify-content:center; 
-  margin:20px auto;
+h1.casino-title {
+  color: gold;
+  text-shadow: 0 0 10px #ff0, 0 0 20px #ff0;
 }
-.cell{
-  width:60px; height:60px; 
-  border-radius:8px; 
-  border:2px solid #ffd700; 
-  display:flex; align-items:center; justify-content:center; 
-  font-weight:bold; font-size:16px; 
-  cursor:pointer; 
-  background:#2c2c54; color:#fff; 
-  transition: all 0.3s;
+
+button {
+  background: #ffcc00;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  margin: 5px;
+  cursor: pointer;
 }
-.cell.highlight{ background:#ffd700; color:#000; transform:scale(1.2);}
-button,input{ padding:8px 12px; margin:5px; font-size:16px; border-radius:8px; border:none; cursor:pointer;}
-button{ background:#ff4d4d; color:#fff;}
-button:hover{ background:#ff1a1a;}
-input{ width:150px;}
-@media(max-width:500px){
-  #bingoCard{grid-template-columns:repeat(5,40px);gap:3px;}
-  .cell{width:40px;height:40px;font-size:14px;}
-  input,button{font-size:14px;padding:6px 10px;}
+
+input {
+  padding: 10px;
+  margin: 5px;
 }
 
 

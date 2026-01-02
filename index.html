@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>🎰 Habesha Bingo 🎰</h1>
+<h1 class="casino-title">🎰 Habesha Bingo 🎰</h1>
 
 <!-- LOGIN SCREEN FOR HOST -->
 <div id="loginScreen">
@@ -55,24 +55,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   hostLoginBtn.onclick = () => {
     const password = hostPasswordInput.value.trim();
-    if(password === "Hanilove1"){  // <-- your host secret
-      // Show host panel
+    if(password === "Hanilove1"){  // host secret
       loginScreen.style.display = "none";
       document.getElementById("hostPanel").style.display = "block";
-
-      // Load host.js dynamically
       const hostScript = document.createElement("script");
       hostScript.src = "host.js";
       document.body.appendChild(hostScript);
-
       socket.emit("registerHost");
 
     } else if(password === ""){
-      // Player panel
       loginScreen.style.display = "none";
       document.getElementById("playerPanel").style.display = "block";
-
-      // Load player.js dynamically
       const playerScript = document.createElement("script");
       playerScript.src = "player.js";
       document.body.appendChild(playerScript);
@@ -82,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Donate button
   document.getElementById("donateBtn").onclick = () => {
     alert("Redirect to your donation page here!");
   };
@@ -91,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 
