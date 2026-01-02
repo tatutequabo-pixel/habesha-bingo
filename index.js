@@ -1,40 +1,37 @@
 const express = require("express");
-const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const http = require("http");
+const { Server } = require("socket.io");
 const path = require("path");
 
-app.use(express.static(path.join(__dirname)));
-
-let players = {};
-
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("playerJoin", (name) => {
-    players[socket.id] = name;
-    io.emit("playersUpdate", players);
-  });
-
-  socket.on("numberCalled", (number) => {
-    io.emit("numberCalled", number);
-  });
-
-  socket.on("bingo", (name) => {
-    io.emit("bingoWin", name);
-  });
-
-  socket.on("disconnect", () => {
-    delete players[socket.id];
-    io.emit("playersUpdate", players);
-  });
-});
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => {
-  console.log("Habesha Bingo running on port", PORT);
+let calledNumbers = [];
+
+app.use(express.static(path.join(__dirname, "public")));
+
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.emit("initNumbers", calledNumbers);
+
+  socket.on("numberCalled", (num) => {
+    if (!calledNumbers.includes(num)) {
+      calledNumbers.push(num);
+      io.emit("updateNumbers", num);
+    }
+  });
+
+  socket.on("playerBingo", (playerName) => {
+    io.emit("bingoWinner", playerName);
+  });
+
+  socket.on("disconnect", () => console.log("User disconnected"));
 });
 
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 

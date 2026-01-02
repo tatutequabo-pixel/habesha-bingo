@@ -1,39 +1,28 @@
 const socket = io();
-let numbersCalled = [];
-const allNumbers = Array.from({length:75}, (_,i)=>i+1);
+const numbers = Array.from({length: 75}, (_, i) => i+1);
 
-const callBtn = document.getElementById("callNumber");
-const currentCall = document.getElementById("currentCall");
-const playersList = document.getElementById("players");
+const callBtn = document.getElementById("callBtn");
+const calledDiv = document.getElementById("calledNumbers");
 
-function callNumber(){
-  if(numbersCalled.length >= allNumbers.length) return alert("All numbers called!");
-  let number;
-  do{
-    number = allNumbers[Math.floor(Math.random()*allNumbers.length)];
-  }while(numbersCalled.includes(number));
+callBtn.addEventListener("click", () => {
+  if(numbers.length === 0) return;
+  const idx = Math.floor(Math.random() * numbers.length);
+  const num = numbers.splice(idx,1)[0];
 
-  numbersCalled.push(number);
-  currentCall.textContent = number;
-  socket.emit("numberCalled", number);
+  socket.emit("numberCalled", num);
+  addNumberToDiv(num);
 
-  if("speechSynthesis" in window){
-    const msg = new SpeechSynthesisUtterance(`Number ${number}`);
-    window.speechSynthesis.speak(msg);
-  }
-}
-
-socket.on("updatePlayers", (player) => {
-  playersList.innerHTML = "";
-  const ul = document.createElement("ul");
-  Object.values(player).forEach(p=>{
-    const li = document.createElement("li");
-    li.textContent = p.name;
-    playersList.appendChild(li);
-  });
+  const msg = new SpeechSynthesisUtterance("Number " + num);
+  window.speechSynthesis.speak(msg);
 });
 
-callBtn.onclick = callNumber;
+function addNumberToDiv(num) {
+  const span = document.createElement("span");
+  span.textContent = num;
+  span.className = "called-number";
+  calledDiv.appendChild(span);
+}
+
 
 
 

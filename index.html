@@ -1,59 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Habesha Bingo</title>
-<link rel="stylesheet" href="style.css">
-<script src="/socket.io/socket.io.js"></script>
-<script defer src="host.js"></script>
-<script defer src="player.js"></script>
+  <meta charset="UTF-8">
+  <title>Habesha Bingo</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <img id="logo" src="logo.png" alt="Habesha Bingo Logo">
+  <h1>Habesha Bingo</h1>
+  <div class="main-buttons">
+    <button onclick="goHost()">Host Login</button>
+    <button onclick="goPlayer()">Play as Player</button>
+  </div>
 
-<div id="loginPanel">
-  <h2>Host Login</h2>
-  <input type="password" id="hostPassword" placeholder="Enter password"/>
-  <button id="loginHostBtn">Login as Host</button>
-</div>
-
-<div id="hostPanel" style="display:none">
-  <h2>Host Panel</h2>
-  <button id="callNumber">Call Number</button>
-  <p>Current Number: <span id="currentCall"></span></p>
-  <h3>Players:</h3>
-  <div id="players"></div>
-</div>
-
-<div id="playerPanel">
-  <h2>Player Panel</h2>
-  <input type="text" id="playerName" placeholder="Your name"/>
-  <button id="joinGame">Join Game</button>
-  <div id="bingoCard"></div>
-  <button id="lockCard">Lock Card</button>
-  <button id="bingoBtn">BINGO!</button>
-  <p id="status"></p>
-</div>
-
-<script>
-const secretKey = "RENDER_ENV";
-
-const loginBtn = document.getElementById("loginHostBtn");
-const hostPanel = document.getElementById("hostPanel");
-const loginPanel = document.getElementById("loginPanel");
-
-loginBtn.onclick = () => {
-  const pass = document.getElementById("hostPassword").value;
-  if(pass === secretKey){
-    hostPanel.style.display = "block";
-    loginPanel.style.display = "none";
-  } else {
-    alert("Incorrect password!");
-  }
-};
-</script>
-
+  <script>
+    function goHost() {
+      const password = prompt("Enter host password:");
+      if(password === "Hanilove1"){
+        window.location.href = "host.html";
+      } else alert("Wrong password!");
+    }
+    function goPlayer() {
+      window.location.href = "player.html";
+    }
+  </script>
 </body>
 </html>
+
 
 
 
