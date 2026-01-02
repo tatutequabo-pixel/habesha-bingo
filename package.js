@@ -7,10 +7,12 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "firebase": "^9.22.0"
   },
   "engines": {
     "node": "18.x"
   }
 }
+
 

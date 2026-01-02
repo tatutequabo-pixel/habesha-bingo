@@ -1,36 +1,49 @@
-const socket=io();
+const socket = io();
 
-function getLetter(n){ if(n<=15) return"B"; if(n<=30) return"I"; if(n<=45) return"N"; if(n<=60) return"G"; return"O"; }
-
+let numbersCalled = [];
+const allNumbers = Array.from({ length: 75 }, (_, i) => i + 1);
 const callBtn = document.getElementById("callNumber");
 const currentCall = document.getElementById("currentCall");
 const playersList = document.getElementById("players");
 
-callBtn.onclick=()=>{
-  const num=Math.floor(Math.random()*75)+1;
-  socket.emit("callNumber",num);
-};
+// Function to call a number
+function callNumber() {
+  if (numbersCalled.length >= allNumbers.length) {
+    alert("All numbers have been called!");
+    return;
+  }
 
-socket.on("numberCalled", num=>{
-  const letter=getLetter(num);
-  currentCall.innerText=`${letter} ${num}`;
-  const msg=new SpeechSynthesisUtterance(`${letter} ${num}`);
-  msg.rate=1.1; msg.pitch=1.2; 
-  window.speechSynthesis.speak(msg);
-});
+  let number;
+  do {
+    number = allNumbers[Math.floor(Math.random() * allNumbers.length)];
+  } while (numbersCalled.includes(number));
 
-socket.on("playerList", list=>{
-  playersList.innerHTML="";
-  list.forEach(name=>{
-    const li=document.createElement("li");
-    li.textContent=name;
+  numbersCalled.push(number);
+  currentCall.textContent = number;
+
+  // Emit to players
+  socket.emit("numberCalled", number);
+
+  // Speak number
+  if ("speechSynthesis" in window) {
+    const msg = new SpeechSynthesisUtterance(`Number ${number}`);
+    window.speechSynthesis.speak(msg);
+  }
+}
+
+// Update player list in real-time
+socket.on("updatePlayers", (player) => {
+  playersList.innerHTML = "";
+  const ul = document.createElement("ul");
+  Object.values(player).forEach(p => {
+    const li = document.createElement("li");
+    li.textContent = p.name;
     playersList.appendChild(li);
   });
 });
 
-socket.on("gameWon", data=>{
-  alert(`🎉 BINGO!! ${data.name} WINS! 🎉 Coins: ${data.coins}`);
-});
+// Call number button
+callBtn.onclick = callNumber;
 
 
 

@@ -4,22 +4,28 @@ const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const path = require("path");
 
-// Serve static files (HTML, CSS, JS)
+// Firebase
+const { initializeApp } = require("firebase/app");
+const { getDatabase, ref, set } = require("firebase/database");
+const firebaseConfig = require("./firebase").config;
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+
+// Serve static files
 app.use(express.static(path.join(__dirname)));
 
-// Socket.io logic
 io.on("connection", (socket) => {
   console.log("New user connected");
 
   // Host registration
   socket.on("registerHost", () => {
-    console.log("Host registered");
+    console.log("Host connected");
   });
 
   // Player joins
-  socket.on("playerJoin", (name) => {
-    console.log("Player joined:", name);
-    io.emit("updatePlayers", name);
+  socket.on("playerJoin", async (name) => {
+    await set(ref(db, "players/" + socket.id), { name, joinedAt: Date.now() });
+    io.emit("updatePlayers", { id: socket.id, name });
   });
 
   // Host calls number
@@ -27,19 +33,20 @@ io.on("connection", (socket) => {
     io.emit("numberCalled", number);
   });
 
-  // Bingo win
-  socket.on("bingo", (playerName) => {
+  // Player wins Bingo
+  socket.on("bingo", async (playerName) => {
     io.emit("bingoWin", playerName);
+    await set(ref(db, "winners/" + Date.now()), { player: playerName });
   });
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
+  socket.on("disconnect", async () => {
+    await set(ref(db, "players/" + socket.id), null);
   });
 });
 
-// Render uses dynamic port
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => console.log(`Habesha Bingo running on port ${PORT}`));
+
 
 
 
