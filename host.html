@@ -5,68 +5,40 @@
 <title>Habesha Bingo Host</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #ffecd2, #fcb69f);
-    text-align: center;
-    margin: 0;
-    padding: 0;
-  }
-  h1 { margin-top: 30px; font-size: 36px; color: #333; text-shadow: 1px 1px 3px #fff; }
-  .login-container { margin-top: 50px; }
-  input[type=password] {
-    padding: 10px;
-    font-size: 16px;
-    width: 250px;
-    border-radius: 5px;
-    border: 1px solid #333;
-    margin-right: 10px;
-  }
-  button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border:none;
-    border-radius: 5px;
-    background: #ff7e5f;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  button:hover { background: #eb5e3c; }
-  #hostControls { margin-top: 50px; }
-  #lastNumber {
-    margin-top: 30px;
-    font-size: 48px;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 2px 2px 5px #000;
-  }
-  #resetBtn { margin-top: 20px; background: #555; }
-  #resetBtn:hover { background: #333; }
+body { font-family: Arial,sans-serif; text-align:center; background:linear-gradient(to right,#ffecd2,#fcb69f); margin:0; padding:0;}
+h1{margin-top:30px;font-size:36px;color:#333;text-shadow:1px 1px 3px #fff;}
+.login-container{margin-top:50px;}
+input[type=password]{padding:10px;font-size:16px;width:250px;border-radius:5px;border:1px solid #333;margin-right:10px;}
+button{padding:10px 20px;font-size:16px;border:none;border-radius:5px;background:#ff7e5f;color:white;cursor:pointer;transition:0.3s;}
+button:hover{background:#eb5e3c;}
+#hostControls{margin-top:50px;}
+#lastNumber{margin-top:30px;font-size:48px;font-weight:bold;color:#fff;text-shadow:2px 2px 5px #000;}
+#resetBtn{margin-top:20px;background:#555;}
+#resetBtn:hover{background:#333;}
 </style>
 </head>
 <body>
 <h1>Habesha Bingo - Host Panel</h1>
 <div class="login-container">
-  <input type="password" id="hostPass" placeholder="Enter password">
-  <button id="loginBtn">Login</button>
+<input type="password" id="hostPass" placeholder="Enter password">
+<button id="loginBtn">Login</button>
 </div>
+
 <div id="hostControls" style="display:none;">
-  <button id="callBtn">🎲 Call Number</button>
-  <button id="resetBtn">🔄 Reset Game</button>
-  <div id="lastNumber">Last Number: --</div>
+<button id="callBtn">🎲 Call Number</button>
+<button id="resetBtn">🔄 Reset Game</button>
+<div id="lastNumber">Last Number: --</div>
 </div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="host.js"></script>
 <script>
-document.getElementById("loginBtn").addEventListener("click", function() {
-  var pass = document.getElementById("hostPass").value;
-  if(pass === "Hanilove1") {
-    document.getElementById("hostControls").style.display = "block";
+document.getElementById("loginBtn").addEventListener("click", function(){
+  const pass=document.getElementById("hostPass").value;
+  if(pass==="Hanilove1"){
+    document.getElementById("hostControls").style.display="block";
     alert("✅ Login successful! Ready to call numbers.");
-  } else {
-    alert("❌ Wrong password!");
-  }
+  } else alert("❌ Wrong password!");
 });
 </script>
 </body>

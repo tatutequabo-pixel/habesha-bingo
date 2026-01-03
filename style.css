@@ -1,14 +1,11 @@
 body{font-family:Arial,sans-serif;text-align:center;background:#f0f0f0;}
-.board{display:grid;grid-template-columns:repeat(5,60px);grid-gap:10px;justify-content:center;margin:20px auto;}
-.cell{width:60px;height:60px;background:white;border:1px solid #333;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:bold;}
+.board{display:grid;grid-template-columns:repeat(5,100px);grid-gap:10px;justify-content:center;margin:20px auto;}
+.cell{width:100px;height:100px;background:white;border:2px solid #333;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:bold;font-size:28px;}
 .cell.call-available{background:yellow;}
 .cell.called{background:green;color:white;}
-.bingo-ball{width:40px;height:40px;background:red;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;position:absolute;font-weight:bold;z-index:1000;}
+.bingo-ball{width:80px;height:80px;background:red;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:32px;}
 .winner-banner{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:gold;padding:10px 20px;font-size:18px;border-radius:5px;box-shadow:0 0 10px #000;z-index:2000;}
 .login-container button{margin:10px;padding:10px 20px;font-size:16px;cursor:pointer;}
-
-
-
 
 
 

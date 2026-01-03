@@ -9,6 +9,7 @@ const io = new Server(server);
 app.use(express.static(__dirname));
 
 let calledNumbers = [];
+let gameOver = false;
 
 function getLetter(num) {
   if (num <= 15) return "B";
@@ -19,7 +20,7 @@ function getLetter(num) {
 }
 
 function generateNumber() {
-  if (calledNumbers.length >= 75) return null;
+  if (calledNumbers.length >= 75 || gameOver) return null;
   let num;
   do {
     num = Math.floor(Math.random() * 75) + 1;
@@ -30,7 +31,7 @@ function generateNumber() {
 
 io.on("connection", (socket) => {
   socket.on("callNumber", (data) => {
-    if (data.role !== "host") return;
+    if (data.role !== "host" || gameOver) return;
     const number = generateNumber();
     if (!number) return;
     const letter = getLetter(number);
@@ -38,18 +39,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on("bingoWinner", (data) => {
+    if (gameOver) return;
+    gameOver = true;
     io.emit("announceWinner", { name: data.name });
   });
 
   socket.on("resetGame", () => {
     calledNumbers = [];
+    gameOver = false;
     io.emit("resetGamePlayers");
   });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("Habesha Bingo running on port " + PORT));
-
 
 
 

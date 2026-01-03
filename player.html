@@ -11,16 +11,24 @@
 <button id="bingoBtn">Bingo!</button>
 <h3>Leaderboard</h3>
 <div id="leaderboard"></div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="player.js"></script>
 <script>
-const board = document.getElementById("board");
-for(let i=1;i<=25;i++){
-  const cell = document.createElement("div");
-  cell.className="cell";
-  cell.innerText=Math.floor(Math.random()*75)+1;
-  board.appendChild(cell);
+const board=document.getElementById("board");
+let numbers=[];
+
+while(numbers.length<25){
+  let n=Math.floor(Math.random()*75)+1;
+  if(!numbers.includes(n)) numbers.push(n);
 }
+
+numbers.forEach(n=>{
+  const cell=document.createElement("div");
+  cell.className="cell";
+  cell.innerText=n;
+  board.appendChild(cell);
+});
 </script>
 </body>
 </html>
