@@ -38,15 +38,17 @@ io.on("connection", (socket) => {
     if (!number) return;
 
     const letter = getLetter(number);
-
     io.emit("numberCalled", { number, letter });
+  });
+
+  // winner announcement
+  socket.on("bingoWinner", (data) => {
+    io.emit("announceWinner", { name: data.name });
   });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log("Habesha Bingo running on port " + PORT);
-});
+server.listen(PORT, () => console.log("Habesha Bingo running on port " + PORT));
 
 
 

@@ -44,6 +44,75 @@ body {
   background: orange;
 }
 
+/* Host page */
+.host-body {
+  background: radial-gradient(circle, #1b5e20, #0b3d2e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.host-panel {
+  background: rgba(0,0,0,0.6);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 30px gold;
+}
+
+.host-btn {
+  font-size: 24px;
+  padding: 20px 40px;
+  border: none;
+  border-radius: 12px;
+  background: gold;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.host-btn:hover {
+  background: orange;
+}
+
+/* Bingo winner banner */
+.winner-banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: gold;
+  color: black;
+  font-size: 32px;
+  font-weight: bold;
+  padding: 20px 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #fff;
+  z-index: 9999;
+  animation: flash 1s infinite;
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.bingo-btn {
+  margin-top: 20px;
+  font-size: 24px;
+  padding: 15px 30px;
+  border-radius: 12px;
+  background: gold;
+  color: black;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bingo-btn:hover {
+  background: orange;
+}
+
 
 
 
