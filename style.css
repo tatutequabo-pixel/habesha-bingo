@@ -1,12 +1,91 @@
-body{font-family:Arial,sans-serif;text-align:center;background:#f0f0f0;}
-.board{display:grid;grid-template-columns:repeat(5,100px);grid-gap:10px;justify-content:center;margin:20px auto;}
-.cell{width:100px;height:100px;background:white;border:2px solid #333;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:bold;font-size:28px;}
+body{
+  font-family: 'Arial', sans-serif;
+  text-align:center;
+  background: radial-gradient(circle, #ffecd2 0%, #fcb69f 100%);
+  margin:0; padding:0;
+}
+
+#casinoLobby{
+  margin-top:100px;
+  background: rgba(0,0,0,0.7);
+  display:inline-block;
+  padding:40px;
+  border-radius:20px;
+  color:white;
+  box-shadow: 0 0 20px gold;
+}
+
+#casinoLobby h1{
+  font-size:48px;
+  color: gold;
+  text-shadow: 2px 2px 5px #000;
+}
+
+#casinoLobby input{
+  padding:15px; font-size:18px; border-radius:10px; border:none; width:250px;
+  margin-right:10px;
+}
+
+#casinoLobby button{
+  padding:15px 25px; font-size:18px; border-radius:10px; background:gold; border:none; cursor:pointer; font-weight:bold;
+  transition:0.3s;
+}
+
+#casinoLobby button:hover{background:orange;}
+
+.board{
+  display:grid;
+  grid-template-columns:repeat(5,100px);
+  grid-gap:10px;
+  justify-content:center;
+  margin:20px auto;
+}
+
+.cell{
+  width:100px; height:100px;
+  background:white; border:2px solid #333;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-weight:bold; font-size:28px; border-radius:10px;
+  transition:0.2s;
+}
+
 .cell.call-available{background:yellow;}
-.cell.called{background:green;color:white;}
-.bingo-ball{width:80px;height:80px;background:red;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:32px;}
-.winner-banner{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:gold;padding:10px 20px;font-size:18px;border-radius:5px;box-shadow:0 0 10px #000;z-index:2000;}
-#playerDisplayName{font-size:24px;color:#333;margin-top:10px;margin-bottom:10px;}
-#nameContainer input{padding:10px;font-size:16px;border-radius:5px;border:1px solid #333;}
-#nameContainer button{padding:10px 20px;font-size:16px;border-radius:5px;background:#ff7e5f;color:white;border:none;cursor:pointer;transition:0.3s;}
-#nameContainer button:hover{background:#eb5e3c;}
+.cell.called{background:green; color:white;}
+
+.balls-container{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-top:20px;
+}
+
+.bingo-ball{
+  width:80px;height:80px;
+  background:red; border-radius:50%;
+  color:white; display:flex; align-items:center; justify-content:center;
+  font-weight:bold; font-size:32px; margin:5px;
+}
+
+.winner-banner{
+  position:fixed;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  background:gold;
+  padding:10px 20px;
+  font-size:22px;
+  border-radius:10px;
+  box-shadow:0 0 10px #000;
+  z-index:2000;
+}
+
+#playerDisplayName{
+  font-size:28px; color:#333; margin-top:10px; margin-bottom:10px;
+}
+
+#leaderboard{
+  margin-top:20px;
+  font-size:18px;
+  color:#222;
+}
 

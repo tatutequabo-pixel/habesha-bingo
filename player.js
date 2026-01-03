@@ -9,14 +9,13 @@ const boardDiv = document.getElementById("board");
 const displayName = document.getElementById("playerDisplayName");
 const bingoBtn = document.getElementById("bingoBtn");
 const leaderboard = document.getElementById("leaderboard");
+const ballsContainer = document.getElementById("ballsContainer");
 
 let playerName = "";
 let board = [];
-let calledNumbers = [];
 let numberCellMap = {};
-let ballsContainer = null;
 
-// Generate 5x5 board
+// Generate 5x5 board numbers
 function generateBoard() {
   const nums = [];
   while(nums.length < 25){
@@ -47,28 +46,11 @@ function renderBoard() {
   });
 }
 
-// Balls container
-function createBallsContainer() {
-  ballsContainer = document.createElement("div");
-  ballsContainer.style.position = "fixed";
-  ballsContainer.style.top = "100px";
-  ballsContainer.style.left = "50%";
-  ballsContainer.style.transform = "translateX(-50%)";
-  ballsContainer.style.display = "flex";
-  ballsContainer.style.flexWrap = "wrap";
-  ballsContainer.style.gap = "10px";
-  ballsContainer.style.zIndex = "1000";
-  document.body.appendChild(ballsContainer);
-}
-
-// Show ball
+// Show ball below board
 function showBall(number) {
   const ball = document.createElement("div");
   ball.className = "bingo-ball";
   ball.innerText = number;
-  ball.style.width = "80px";
-  ball.style.height = "80px";
-  ball.style.fontSize = "32px";
   ballsContainer.appendChild(ball);
 }
 
@@ -86,7 +68,6 @@ function speakNumber(letter, number) {
 function checkBingo() {
   const status = board.map(n => numberCellMap[n].classList.contains("called") ? 1 : 0);
   let win = false;
-
   // Rows
   for(let i=0;i<5;i++) if(status.slice(i*5,i*5+5).every(v=>v===1)) win=true;
   // Columns
@@ -94,11 +75,10 @@ function checkBingo() {
   // Diagonals
   if([status[0],status[6],status[12],status[18],status[24]].every(v=>v===1)) win=true;
   if([status[4],status[8],status[12],status[16],status[20]].every(v=>v===1)) win=true;
-
   return win;
 }
 
-// Start game button
+// Start game
 startBtn.addEventListener("click", () => {
   const name = nameInput.value.trim();
   if(!name) return alert("Please enter your name!");
@@ -106,21 +86,20 @@ startBtn.addEventListener("click", () => {
   displayName.innerText = `Player: ${playerName}`;
   board = generateBoard();
   renderBoard();
-  createBallsContainer();
   boardContainer.style.display = "block";
   casinoLobby.style.display = "none";
+  ballsContainer.innerHTML = "";
 });
 
 // Bingo click
 bingoBtn.addEventListener("click", () => {
-  if(checkBingo()) {
+  if(checkBingo()){
     socket.emit("bingoWinner", {name: playerName});
   } else alert("❌ Not a valid Bingo yet!");
 });
 
 // Socket events
 socket.on("numberCalled", data => {
-  if(!calledNumbers.includes(data.number)) calledNumbers.push(data.number);
   speakNumber(data.letter, data.number);
   showBall(data.number);
 
@@ -146,7 +125,6 @@ socket.on("resetGamePlayers", () => {
     const cell = numberCellMap[n];
     cell.classList.remove("called","call-available");
   });
-  calledNumbers = [];
   ballsContainer.innerHTML = "";
   alert("Game has been reset by host!");
 });
