@@ -1,31 +1,19 @@
 const socket = io();
 
-function callNumber(){
-    const num = document.getElementById('number').value;
-    if(num) socket.emit('callNumber', num);
-    document.getElementById('number').value = "";
+function speakNumber(letter, number) {
+  const msg = new SpeechSynthesisUtterance(`${letter} ${number}`);
+  msg.rate = 0.9;
+  msg.lang = "en-US";
+  speechSynthesis.speak(msg);
 }
 
-function resetGame(){
-    socket.emit('resetGame');
-}
-
-socket.on('numberCalled', num => {
-    const ul = document.getElementById('calledNumbers');
-    const li = document.createElement('li');
-    li.innerText = num;
-    ul.appendChild(li);
-
-    // Voice
-    const msg = new SpeechSynthesisUtterance(`Number ${num} called`);
-    window.speechSynthesis.speak(msg);
+document.getElementById("callBtn").addEventListener("click", () => {
+  socket.emit("callNumber", { role: "host" });
 });
 
-socket.on('gameReset', () => {
-    document.getElementById('calledNumbers').innerHTML = '';
+socket.on("numberCalled", (data) => {
+  speakNumber(data.letter, data.number);
 });
-
-
 
 
 

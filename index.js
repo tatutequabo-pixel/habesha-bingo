@@ -1,58 +1,52 @@
-const express = require('express');
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
-const path = require('path');
+const server = http.createServer(app);
+const io = new Server(server);
 
-const HOST_PASSWORD = "Hanilove1"; // Only the host knows this
+app.use(express.static(__dirname));
 
-app.use(express.static(__dirname)); // serve JS, CSS, logo.png
-
-// Landing page - asks host password or redirects to player
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Host login
-app.get('/host', (req, res) => {
-    const password = req.query.password;
-    if(password === HOST_PASSWORD) {
-        res.sendFile(path.join(__dirname, 'host.html'));
-    } else {
-        res.send("Wrong password!");
-    }
-});
-
-// Player page
-app.get('/player', (req, res) => {
-    res.sendFile(path.join(__dirname, 'player.html'));
-});
-
-// Socket.io events
 let calledNumbers = [];
 
-io.on('connection', (socket) => {
-    console.log("New client connected");
+function getLetter(num) {
+  if (num <= 15) return "B";
+  if (num <= 30) return "I";
+  if (num <= 45) return "N";
+  if (num <= 60) return "G";
+  return "O";
+}
 
-    // When host calls a number
-    socket.on('callNumber', (num) => {
-        if(!calledNumbers.includes(num)){
-            calledNumbers.push(num);
-            io.emit('numberCalled', num); // send to all players
-        }
-    });
+function generateNumber() {
+  if (calledNumbers.length >= 75) return null;
 
-    // Reset game
-    socket.on('resetGame', () => {
-        calledNumbers = [];
-        io.emit('gameReset');
-    });
+  let num;
+  do {
+    num = Math.floor(Math.random() * 75) + 1;
+  } while (calledNumbers.includes(num));
+
+  calledNumbers.push(num);
+  return num;
+}
+
+io.on("connection", (socket) => {
+  socket.on("callNumber", (data) => {
+    if (data.role !== "host") return;
+
+    const number = generateNumber();
+    if (!number) return;
+
+    const letter = getLetter(number);
+
+    io.emit("numberCalled", { number, letter });
+  });
 });
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
+server.listen(PORT, () => {
+  console.log("Habesha Bingo running on port " + PORT);
+});
 
 
 

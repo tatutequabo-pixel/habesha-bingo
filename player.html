@@ -1,44 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Habesha Bingo - Player</title>
-    <link rel="stylesheet" href="style.css">
+  <title>Habesha Bingo Player</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Player Board</h1>
 
-    <div id="board"></div>
+<h1>Habesha Bingo</h1>
 
-    <h2>Numbers Called</h2>
-    <ul id="numbersCalled"></ul>
+<div class="bingo-board">
+  <div class="cell">1</div><div class="cell">16</div><div class="cell">31</div><div class="cell">46</div><div class="cell">61</div>
+  <div class="cell">2</div><div class="cell">17</div><div class="cell free">FREE</div><div class="cell">47</div><div class="cell">62</div>
+  <div class="cell">3</div><div class="cell">18</div><div class="cell">33</div><div class="cell">48</div><div class="cell">63</div>
+  <div class="cell">4</div><div class="cell">19</div><div class="cell">34</div><div class="cell">49</div><div class="cell">64</div>
+  <div class="cell">5</div><div class="cell">20</div><div class="cell">35</div><div class="cell">50</div><div class="cell">65</div>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="player.js"></script>
-    <script>
-        // Generate Bingo board
-        const boardDiv = document.getElementById('board');
-        const cols = ['B','I','N','G','O'];
-        const board = [];
+<script src="/socket.io/socket.io.js"></script>
+<script src="player.js"></script>
 
-        for(let c=0; c<5; c++){
-            const colDiv = document.createElement('div');
-            colDiv.classList.add('column');
-            colDiv.innerHTML = `<h3>${cols[c]}</h3>`;
-            let start = c*15 + 1;
-            let end = c*15 + 15;
-            for(let i=start; i<=end; i++){
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                if(c===2 && i===Math.floor((start+end)/2)){
-                    cell.innerText = "FREE";
-                    cell.classList.add('free');
-                } else {
-                    cell.innerText = i;
-                }
-                colDiv.appendChild(cell);
-            }
-            boardDiv.appendChild(colDiv);
-        }
-    </script>
 </body>
 </html>

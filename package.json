@@ -1,7 +1,6 @@
 {
   "name": "habesha-bingo",
   "version": "1.0.0",
-  "description": "Habesha Bingo - Host-only multiplayer Bingo",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
