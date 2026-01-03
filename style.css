@@ -5,7 +5,8 @@ body{font-family:Arial,sans-serif;text-align:center;background:#f0f0f0;}
 .cell.called{background:green;color:white;}
 .bingo-ball{width:80px;height:80px;background:red;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:32px;}
 .winner-banner{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:gold;padding:10px 20px;font-size:18px;border-radius:5px;box-shadow:0 0 10px #000;z-index:2000;}
-.login-container button{margin:10px;padding:10px 20px;font-size:16px;cursor:pointer;}
-
-
+#playerDisplayName{font-size:24px;color:#333;margin-top:10px;margin-bottom:10px;}
+#nameContainer input{padding:10px;font-size:16px;border-radius:5px;border:1px solid #333;}
+#nameContainer button{padding:10px 20px;font-size:16px;border-radius:5px;background:#ff7e5f;color:white;border:none;cursor:pointer;transition:0.3s;}
+#nameContainer button:hover{background:#eb5e3c;}
 
