@@ -20,12 +20,10 @@ function getLetter(num) {
 
 function generateNumber() {
   if (calledNumbers.length >= 75) return null;
-
   let num;
   do {
     num = Math.floor(Math.random() * 75) + 1;
   } while (calledNumbers.includes(num));
-
   calledNumbers.push(num);
   return num;
 }
@@ -33,24 +31,24 @@ function generateNumber() {
 io.on("connection", (socket) => {
   socket.on("callNumber", (data) => {
     if (data.role !== "host") return;
-
     const number = generateNumber();
     if (!number) return;
-
     const letter = getLetter(number);
     io.emit("numberCalled", { number, letter });
   });
 
-  // winner announcement
   socket.on("bingoWinner", (data) => {
     io.emit("announceWinner", { name: data.name });
+  });
+
+  socket.on("resetGame", () => {
+    calledNumbers = [];
+    io.emit("resetGamePlayers");
   });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("Habesha Bingo running on port " + PORT));
-
-
 
 
 

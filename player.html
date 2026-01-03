@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Habesha Bingo Player</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Player Board</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<h1>Habesha Bingo</h1>
-
-<div class="bingo-board">
-  <div class="cell">1</div><div class="cell">16</div><div class="cell">31</div><div class="cell">46</div><div class="cell">61</div>
-  <div class="cell">2</div><div class="cell">17</div><div class="cell free">FREE</div><div class="cell">47</div><div class="cell">62</div>
-  <div class="cell">3</div><div class="cell">18</div><div class="cell">33</div><div class="cell">48</div><div class="cell">63</div>
-  <div class="cell">4</div><div class="cell">19</div><div class="cell">34</div><div class="cell">49</div><div class="cell">64</div>
-  <div class="cell">5</div><div class="cell">20</div><div class="cell">35</div><div class="cell">50</div><div class="cell">65</div>
-</div>
-
-<button id="bingoBtn" class="bingo-btn">BINGO!</button>
-
+<h1>Player Board</h1>
+<div id="board" class="board"></div>
+<button id="bingoBtn">Bingo!</button>
+<h3>Leaderboard</h3>
+<div id="leaderboard"></div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="player.js"></script>
-
+<script>
+const board = document.getElementById("board");
+for(let i=1;i<=25;i++){
+  const cell = document.createElement("div");
+  cell.className="cell";
+  cell.innerText=Math.floor(Math.random()*75)+1;
+  board.appendChild(cell);
+}
+</script>
 </body>
 </html>
-

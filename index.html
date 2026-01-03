@@ -1,37 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Habesha Bingo Login</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Habesha Bingo Login</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <h1>Habesha Bingo</h1>
-
-<div class="login-box">
-  <h2>Login as Host</h2>
-  <input type="password" id="hostPassword" placeholder="Host Password">
-  <button onclick="loginHost()">Login as Host</button>
-
-  <h2>Login as Player</h2>
-  <button onclick="loginPlayer()">Login as Player</button>
+<div class="login-container">
+  <button onclick="location.href='host.html'">Login as Host</button>
+  <button onclick="location.href='player.html'">Login as Player</button>
 </div>
-
-<script>
-  function loginHost() {
-    const pass = document.getElementById("hostPassword").value;
-    if (pass === "Hanilove1") {
-      window.location.href = "host.html";
-    } else {
-      alert("Wrong password");
-    }
-  }
-
-  function loginPlayer() {
-    window.location.href = "player.html";
-  }
-</script>
-
 </body>
 </html>
 
