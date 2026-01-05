@@ -1,134 +1,72 @@
+function generateCard() {
+  const ranges = [
+    [1,15],[16,30],[31,45],[46,60],[61,75]
+  ];
+  let card = [];
+  ranges.forEach(r => {
+    let nums = [];
+    while (nums.length < 5) {
+      let n = Math.floor(Math.random()*(r[1]-r[0]+1))+r[0];
+      if (!nums.includes(n)) nums.push(n);
+    }
+    card.push(...nums);
+  });
+  card[12] = 0; // FREE
+  return card;
+}
+
 const socket = io();
+let card = [];
+let marked = [];
 
-// DOM elements
-const casinoLobby = document.getElementById("casinoLobby");
-const nameInput = document.getElementById("playerName");
-const startBtn = document.getElementById("startBtn");
-const boardContainer = document.getElementById("playerBoardContainer");
-const boardDiv = document.getElementById("board");
-const displayName = document.getElementById("playerDisplayName");
-const bingoBtn = document.getElementById("bingoBtn");
-const leaderboard = document.getElementById("leaderboard");
-const ballsContainer = document.getElementById("ballsContainer");
+joinBtn.onclick = () => {
+  socket.emit("playerJoin", {
+    name: playerName.value,
+    code: playerCode.value
+  }, res => {
+    if (!res.ok) return alert(res.msg);
+    card = res.card;
+    renderBoard();
+    joinScreen.style.display = "none";
+    gameScreen.style.display = "block";
+  });
+};
 
-let playerName = "";
-let board = [];
-let numberCellMap = {};
+socket.on("numberCalled", num => {
+  document.getElementById("called").innerHTML += `<span>${num}</span>`;
+});
 
-// Generate 5x5 board numbers
-function generateBoard() {
-  const nums = [];
-  while(nums.length < 25){
-    const n = Math.floor(Math.random()*75)+1;
-    if(!nums.includes(n)) nums.push(n);
-  }
-  return nums;
-}
+socket.on("bingoWin", name => {
+  alert(`🎉 BINGO! ${name} wins!`);
+});
 
-// Render board
 function renderBoard() {
-  boardDiv.innerHTML = "";
-  numberCellMap = {};
-  board.forEach(num => {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.innerText = num;
-    boardDiv.appendChild(cell);
-    numberCellMap[num] = cell;
-
-    // Manual marking
-    cell.addEventListener("click", () => {
-      if(cell.classList.contains("call-available")){
-        cell.classList.remove("call-available");
-        cell.classList.add("called");
-      }
-    });
+  board.innerHTML = "";
+  card.forEach((n,i) => {
+    const d = document.createElement("div");
+    d.className = "cell";
+    d.innerText = n === 0 ? "FREE" : n;
+    d.onclick = () => {
+      d.classList.toggle("marked");
+      marked[i] = !marked[i];
+      checkBingo();
+    };
+    board.appendChild(d);
   });
 }
 
-// Show ball below board
-function showBall(number) {
-  const ball = document.createElement("div");
-  ball.className = "bingo-ball";
-  ball.innerText = number;
-  ballsContainer.appendChild(ball);
-}
-
-// Speak number
-function speakNumber(letter, number) {
-  const msg = new SpeechSynthesisUtterance(`${letter} ${number}`);
-  msg.rate = 0.85; msg.pitch = 1; msg.lang = "en-US";
-  const voices = speechSynthesis.getVoices();
-  const voice = voices.find(v => v.lang === "en-US");
-  if(voice) msg.voice = voice;
-  speechSynthesis.speak(msg);
-}
-
-// Check Bingo
 function checkBingo() {
-  const status = board.map(n => numberCellMap[n].classList.contains("called") ? 1 : 0);
-  let win = false;
-  // Rows
-  for(let i=0;i<5;i++) if(status.slice(i*5,i*5+5).every(v=>v===1)) win=true;
-  // Columns
-  for(let i=0;i<5;i++) if([status[i],status[i+5],status[i+10],status[i+15],status[i+20]].every(v=>v===1)) win=true;
-  // Diagonals
-  if([status[0],status[6],status[12],status[18],status[24]].every(v=>v===1)) win=true;
-  if([status[4],status[8],status[12],status[16],status[20]].every(v=>v===1)) win=true;
-  return win;
+  const wins = [
+    [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],
+    [15,16,17,18,19],[20,21,22,23,24],
+    [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],
+    [3,8,13,18,23],[4,9,14,19,24],
+    [0,6,12,18,24],[4,8,12,16,20]
+  ];
+  if (wins.some(w => w.every(i => marked[i]))) {
+    socket.emit("bingo");
+  }
 }
-
-// Start game
-startBtn.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  if(!name) return alert("Please enter your name!");
-  playerName = name;
-  displayName.innerText = `Player: ${playerName}`;
-  board = generateBoard();
-  renderBoard();
-  boardContainer.style.display = "block";
-  casinoLobby.style.display = "none";
-  ballsContainer.innerHTML = "";
-});
-
-// Bingo click
-bingoBtn.addEventListener("click", () => {
-  if(checkBingo()){
-    socket.emit("bingoWinner", {name: playerName});
-  } else alert("❌ Not a valid Bingo yet!");
-});
-
-// Socket events
-socket.on("numberCalled", data => {
-  speakNumber(data.letter, data.number);
-  showBall(data.number);
-
-  const cell = numberCellMap[data.number];
-  if(cell) cell.classList.add("call-available");
-});
-
-socket.on("announceWinner", data => {
-  alert(`🎉 ${data.name} wins!`);
-  const banner = document.createElement("div");
-  banner.innerText = `🎉 ${data.name} wins! 🎉`;
-  banner.className = "winner-banner";
-  document.body.appendChild(banner);
-  setTimeout(()=>banner.remove(),5000);
-
-  const entry = document.createElement("div");
-  entry.innerText = `🎉 ${data.name} wins!`;
-  leaderboard.appendChild(entry);
-});
-
-socket.on("resetGamePlayers", () => {
-  board.forEach(n => {
-    const cell = numberCellMap[n];
-    cell.classList.remove("called","call-available");
-  });
-  ballsContainer.innerHTML = "";
-  alert("Game has been reset by host!");
-});
-
 
 
 

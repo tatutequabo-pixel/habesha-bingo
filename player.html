@@ -1,31 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Habesha Bingo - Player</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div id="casinoLobby">
-  <h1>🎰 Habesha Bingo 🎰</h1>
-  <p>Enter your player name to join the game:</p>
-  <input type="text" id="playerName" placeholder="Your Name">
-  <button id="startBtn">🎲 Join Game</button>
+<div id="joinScreen">
+  <input id="playerName" placeholder="Your Name">
+  <input id="playerCode" placeholder="Player Code">
+  <button id="joinBtn">Join</button>
 </div>
 
-<div id="playerBoardContainer" style="display:none;">
-  <h2 id="playerDisplayName"></h2>
+<div id="gameScreen" style="display:none;">
+  <div class="bingo-header">
+    <span>B</span><span>I</span><span>N</span><span>G</span><span>O</span>
+  </div>
   <div id="board" class="board"></div>
-  <button id="bingoBtn">Bingo!</button>
-  <h3>Called Numbers</h3>
-  <div id="ballsContainer" class="balls-container"></div>
+  <div id="called"></div>
 </div>
-
-<h3>Leaderboard</h3>
-<div id="leaderboard"></div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="player.js"></script>
-</body>
-</html>

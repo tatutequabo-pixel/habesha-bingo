@@ -1,59 +1,75 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const crypto = require("crypto");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(__dirname));
+app.use(express.static("public"));
 
-let calledNumbers = [];
-let gameOver = false;
+let session;
 
-function getLetter(num) {
-  if (num <= 15) return "B";
-  if (num <= 30) return "I";
-  if (num <= 45) return "N";
-  if (num <= 60) return "G";
-  return "O";
+function generateCode() {
+  return "HB-" + crypto.randomBytes(2).toString("hex").toUpperCase();
 }
 
-function generateNumber() {
-  if (calledNumbers.length >= 75 || gameOver) return null;
-  let num;
-  do {
-    num = Math.floor(Math.random() * 75) + 1;
-  } while (calledNumbers.includes(num));
-  calledNumbers.push(num);
-  return num;
+function createSession() {
+  session = {
+    active: true,
+    hostPassword: "Hanilove1",
+    codes: Array.from({ length: 30 }, () => ({ code: generateCode(), used: false })),
+    players: {},
+    winner: null
+  };
+  console.log("🎲 NEW SESSION STARTED");
 }
+createSession();
 
-io.on("connection", (socket) => {
-  socket.on("callNumber", (data) => {
-    if (data.role !== "host" || gameOver) return;
-    const number = generateNumber();
-    if (!number) return;
-    const letter = getLetter(number);
-    io.emit("numberCalled", { number, letter });
+io.on("connection", socket => {
+
+  socket.on("hostJoin", (password, cb) => {
+    if (password !== session.hostPassword) return cb(false);
+    socket.join("host");
+    cb(session.codes.map(c => c.code));
   });
 
-  socket.on("bingoWinner", (data) => {
-    if (gameOver) return;
-    gameOver = true;
-    io.emit("announceWinner", { name: data.name });
+  socket.on("playerJoin", ({ name, code }, cb) => {
+    if (!session.active) return cb({ ok:false, msg:"Game ended" });
+
+    const c = session.codes.find(x => x.code === code && !x.used);
+    if (!c) return cb({ ok:false, msg:"Invalid or used code" });
+
+    c.used = true;
+    session.players[socket.id] = { name, card: generateCard(), marked: [] };
+    socket.join("players");
+    cb({ ok:true, card: session.players[socket.id].card });
+  });
+
+  socket.on("callNumber", num => {
+    if (!session.active) return;
+    io.to("players").emit("numberCalled", num);
+  });
+
+  socket.on("bingo", () => {
+    if (session.winner) return;
+    session.winner = session.players[socket.id].name;
+    session.active = false;
+    io.emit("bingoWin", session.winner);
   });
 
   socket.on("resetGame", () => {
-    calledNumbers = [];
-    gameOver = false;
-    io.emit("resetGamePlayers");
+    createSession();
+    io.emit("gameReset");
+  });
+
+  socket.on("disconnect", () => {
+    delete session.players[socket.id];
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log("Habesha Bingo running on port " + PORT));
-
+server.listen(3000, () => console.log("✅ Habesha Bingo Live"));
 
 
 

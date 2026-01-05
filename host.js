@@ -1,39 +1,27 @@
 const socket = io();
-let calledNumbers = [];
-let gameOver = false;
+let called = [];
 
-function getLetter(num){
-  if(num<=15) return "B";
-  if(num<=30) return "I";
-  if(num<=45) return "N";
-  if(num<=60) return "G";
-  return "O";
-}
+document.getElementById("loginBtn").onclick = () => {
+  socket.emit("hostJoin", hostPassword.value, codes => {
+    document.getElementById("codes").innerHTML =
+      codes.map(c => `<div>${c}</div>`).join("");
+  });
+};
 
-function generateNumber(){
-  if(calledNumbers.length>=75 || gameOver){ alert("No more numbers!"); return null;}
-  let num;
-  do{ num=Math.floor(Math.random()*75)+1;} while(calledNumbers.includes(num));
-  calledNumbers.push(num);
-  return num;
-}
+document.getElementById("callBtn").onclick = () => {
+  let n;
+  do { n = Math.floor(Math.random()*75)+1; }
+  while (called.includes(n));
+  called.push(n);
 
-document.getElementById("callBtn").addEventListener("click", ()=>{
-  if(gameOver){ alert("Game over! Reset to play again."); return;}
-  const number=generateNumber();
-  if(!number) return;
-  const letter=getLetter(number);
-  socket.emit("callNumber",{role:"host"});
-  document.getElementById("lastNumber").innerText=`Last Number: ${letter} ${number}`;
-});
+  const letter =
+    n<=15?"B":n<=30?"I":n<=45?"N":n<=60?"G":"O";
 
-document.getElementById("resetBtn").addEventListener("click", ()=>{
-  if(confirm("Reset game?")){
-    calledNumbers=[];
-    gameOver=false;
-    socket.emit("resetGame");
-    document.getElementById("lastNumber").innerText="Last Number: --";
-    alert("✅ Game reset complete.");
-  }
-});
+  socket.emit("callNumber", `${letter}${n}`);
+  lastNumber.innerText = `${letter}${n}`;
+};
+
+document.getElementById("resetBtn").onclick = () => {
+  socket.emit("resetGame");
+};
 
