@@ -41,15 +41,36 @@ socket.on("bingo-winner", (data) => {
 });
 
 // ================= BOARD RENDER =================
-function renderBoard(board, calledNumbers = []){
+function renderBoard(board, calledNumbers = []) {
   boardDiv.innerHTML = "";
-  board.forEach(num => {
-    const cell = document.createElement("div");
-    cell.className = "board-cell";
-    cell.innerText = num;
-    if (calledNumbers.includes(num)) cell.classList.add("called");
-    boardDiv.appendChild(cell);
+
+  const table = document.createElement("table");
+  table.className = "bingo-table";
+
+  // B I N G O header
+  const headerRow = document.createElement("tr");
+  ["B","I","N","G","O"].forEach(letter => {
+    const th = document.createElement("th");
+    th.innerText = letter;
+    headerRow.appendChild(th);
   });
+  table.appendChild(headerRow);
+
+  // 5x5 grid
+  for (let i = 0; i < 5; i++) {
+    const tr = document.createElement("tr");
+    for (let j = 0; j < 5; j++) {
+      const td = document.createElement("td");
+      const num = board[i*5 + j];
+      td.innerText = num;
+      td.className = "board-cell";
+      if (calledNumbers.includes(num)) td.classList.add("called");
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+
+  boardDiv.appendChild(table);
 }
 
 
