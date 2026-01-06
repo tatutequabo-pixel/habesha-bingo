@@ -1,3 +1,5 @@
+alert("🔥 NEW PLAYER.JS LOADED 🔥");
+
 const socket = io();
 
 const loginPanel = document.getElementById("loginPanel");
