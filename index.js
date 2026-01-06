@@ -1,3 +1,8 @@
+// ============================
+// HABESHA BINGO SERVER
+// Fully replacement, root route included
+// ============================
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -8,24 +13,30 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Serve public folder
+// ----------------------------
+// Serve static files from 'public'
+// ----------------------------
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ FIX: Root route (prevents "Cannot GET /")
+// ----------------------------
+// Root route: landing page
+// ----------------------------
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* ======================
-   GAME SESSION LOGIC
-====================== */
+// ----------------------------
+// GAME SESSION LOGIC
+// ----------------------------
 
 let session = null;
 
+// Generate unique player code
 function generateCode() {
   return "HB-" + crypto.randomBytes(2).toString("hex").toUpperCase();
 }
 
+// Generate real bingo card
 function generateCard() {
   const ranges = [
     [1, 15],   // B
@@ -39,44 +50,39 @@ function generateCard() {
   ranges.forEach(([min, max]) => {
     let nums = [];
     while (nums.length < 5) {
-      let n = Math.floor(Math.random() * (max - min + 1)) + min;
+      const n = Math.floor(Math.random() * (max - min + 1)) + min;
       if (!nums.includes(n)) nums.push(n);
     }
     card.push(...nums);
   });
 
-  card[12] = 0; // FREE space
+  card[12] = 0; // FREE space in the center
   return card;
 }
 
+// Create a new bingo session
 function createSession() {
   session = {
     active: true,
     hostPassword: "Hanilove1",
-    codes: Array.from({ length: 30 }, () => ({
-      code: generateCode(),
-      used: false
-    })),
+    codes: Array.from({ length: 30 }, () => ({ code: generateCode(), used: false })),
     players: {},
     winner: null
   };
 
-  console.log("🎲 New Bingo Session Created");
+  console.log("🎲 New Bingo session created");
 }
 
 createSession();
 
-/* ======================
-   SOCKET.IO
-====================== */
-
+// ----------------------------
+// SOCKET.IO LOGIC
+// ----------------------------
 io.on("connection", socket => {
 
-  // HOST LOGIN
+  // --- Host login ---
   socket.on("hostJoin", (password, cb) => {
-    if (password !== session.hostPassword) {
-      return cb({ success: false });
-    }
+    if (password !== session.hostPassword) return cb({ success: false });
     socket.join("host");
     cb({
       success: true,
@@ -84,19 +90,14 @@ io.on("connection", socket => {
     });
   });
 
-  // PLAYER JOIN
+  // --- Player join ---
   socket.on("playerJoin", ({ name, code }, cb) => {
-    if (!session.active) {
-      return cb({ ok: false, msg: "Game not active" });
-    }
+    if (!session.active) return cb({ ok: false, msg: "Game not active" });
 
     const codeObj = session.codes.find(c => c.code === code && !c.used);
-    if (!codeObj) {
-      return cb({ ok: false, msg: "Invalid or used code" });
-    }
+    if (!codeObj) return cb({ ok: false, msg: "Invalid or used code" });
 
     codeObj.used = true;
-
     session.players[socket.id] = {
       name,
       card: generateCard(),
@@ -111,13 +112,13 @@ io.on("connection", socket => {
     });
   });
 
-  // HOST CALL NUMBER
-  socket.on("callNumber", number => {
+  // --- Host calls number ---
+  socket.on("callNumber", num => {
     if (!session.active) return;
-    io.to("players").emit("numberCalled", number);
+    io.to("players").emit("numberCalled", num);
   });
 
-  // PLAYER CLAIMS BINGO
+  // --- Player claims bingo ---
   socket.on("bingo", () => {
     if (session.winner || !session.active) return;
 
@@ -131,22 +132,21 @@ io.on("connection", socket => {
     console.log("🏆 BINGO WINNER:", player.name);
   });
 
-  // RESET GAME
+  // --- Reset game ---
   socket.on("resetGame", () => {
     createSession();
     io.emit("gameReset");
   });
 
-  // DISCONNECT
+  // --- Disconnect ---
   socket.on("disconnect", () => {
     delete session.players[socket.id];
   });
 });
 
-/* ======================
-   START SERVER
-====================== */
-
+// ----------------------------
+// START SERVER
+// ----------------------------
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`✅ Habesha Bingo running on port ${PORT}`);
