@@ -8,7 +8,7 @@ const joinBtn = document.getElementById("joinGameBtn");
 const boardDiv = document.getElementById("playerBoard");
 const winnerBanner = document.getElementById("winnerBanner");
 
-// Join game
+// ================= JOIN GAME =================
 joinBtn.addEventListener("click", () => {
   const name = nameInput.value.trim();
   const code = codeInput.value.trim();
@@ -16,7 +16,7 @@ joinBtn.addEventListener("click", () => {
   socket.emit("join-game", { name, code });
 });
 
-// Join success
+// ================= JOIN SUCCESS =================
 socket.on("join-success", ({ name, board, calledNumbers }) => {
   loginPanel.classList.add("hidden");
   gamePanel.classList.remove("hidden");
@@ -24,26 +24,24 @@ socket.on("join-success", ({ name, board, calledNumbers }) => {
   renderBoard(board, calledNumbers);
 });
 
-// Join error
-socket.on("join-error", (msg) => alert(msg));
+// ================= JOIN ERROR =================
+socket.on("join-error", msg => alert(msg));
 
-// Number called
+// ================= NUMBER CALLED =================
 socket.on("number-called", (num) => {
   document.querySelectorAll(".board-cell").forEach(cell => {
-    if (cell.innerText == num.replace(/[^\d]/g, "")) {
-      cell.classList.add("called");
-    }
+    if (cell.innerText == num.replace(/[^\d]/g,"")) cell.classList.add("called");
   });
 });
 
-// Winner announcement
+// ================= WINNER =================
 socket.on("bingo-winner", (data) => {
   winnerBanner.innerText = `🎉 BINGO! Winner: ${data.name}`;
   winnerBanner.classList.remove("hidden");
 });
 
-// Board render
-function renderBoard(board, calledNumbers=[]) {
+// ================= BOARD RENDER =================
+function renderBoard(board, calledNumbers = []){
   boardDiv.innerHTML = "";
   board.forEach(num => {
     const cell = document.createElement("div");
