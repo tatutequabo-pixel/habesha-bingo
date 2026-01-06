@@ -12,10 +12,10 @@ const startAutoCallBtn = document.getElementById("startAutoCallBtn");
 const resetBtn = document.getElementById("resetGameBtn");
 const hostPasswordInput = document.getElementById("hostPassword");
 
-let numbersToCall = [];
-let autoCallInterval;
-
 const HOST_PASSWORD = "Hanilove1";
+
+let autoCallInterval;
+let numbersToCall = [];
 
 // ================= START GAME =================
 startBtn.addEventListener("click", () => {
@@ -33,29 +33,29 @@ socket.on("game-started", (data) => {
   generateBoardPreview();
   winnerBanner.classList.add("hidden");
 
-  // Prepare automatic numbers (B1-B15, I16-I30,...)
+  // Prepare auto-call numbers B1-B15, I16-I30, etc.
   numbersToCall = [];
   for (let col = 0; col < 5; col++) {
     for (let i = 1; i <= 15; i++) {
-      const num = i + col * 15;
       const letter = "BINGO"[col];
+      const num = i + col * 15;
       numbersToCall.push(`${letter}${num}`);
     }
   }
   numbersToCall = shuffle(numbersToCall);
 });
 
-// ================= AUTO CALL =================
+// ================= AUTO-CALL NUMBERS =================
 startAutoCallBtn.addEventListener("click", () => {
   if (autoCallInterval) clearInterval(autoCallInterval);
   autoCallInterval = setInterval(() => {
     if (numbersToCall.length === 0) {
       clearInterval(autoCallInterval);
-      alert("All numbers have been called!");
+      alert("All numbers called!");
       return;
     }
     const number = numbersToCall.shift();
-    socket.emit("call-number", number);
+    socket.emit("call-number", number); // broadcast to players
     speakNumber(number);
   }, 3000); // calls every 3 seconds
 });
@@ -88,12 +88,10 @@ socket.on("game-reset", () => {
 // ================= BOARD PREVIEW =================
 function generateBoardPreview() {
   boardPreview.innerHTML = "";
-
-  // Create table
   const table = document.createElement("table");
   table.className = "bingo-table";
 
-  // B I N G O header
+  // Header B I N G O
   const headerRow = document.createElement("tr");
   ["B","I","N","G","O"].forEach(letter => {
     const th = document.createElement("th");
@@ -102,14 +100,16 @@ function generateBoardPreview() {
   });
   table.appendChild(headerRow);
 
-  // 5x5 board preview
-  const used = new Set();
-  for (let i = 0; i < 5; i++) {
+  // 5x5 board
+  const tdNumbersUsed = new Set();
+  for (let row = 0; row < 5; row++) {
     const tr = document.createElement("tr");
-    for (let j = 0; j < 5; j++) {
+    for (let col = 0; col < 5; col++) {
       let num;
-      do { num = Math.floor(Math.random() * 15 + 1 + j*15); } while (used.has(num));
-      used.add(num);
+      do {
+        num = Math.floor(Math.random() * 15 + 1 + col * 15);
+      } while (tdNumbersUsed.has(num));
+      tdNumbersUsed.add(num);
 
       const td = document.createElement("td");
       td.className = "board-cell";

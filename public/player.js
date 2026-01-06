@@ -57,11 +57,11 @@ function renderBoard(board, calledNumbers = []) {
   table.appendChild(headerRow);
 
   // 5x5 grid
-  for (let i = 0; i < 5; i++) {
+  for (let row = 0; row < 5; row++) {
     const tr = document.createElement("tr");
-    for (let j = 0; j < 5; j++) {
+    for (let col = 0; col < 5; col++) {
       const td = document.createElement("td");
-      const num = board[i*5 + j];
+      const num = board[row*5 + col];
       td.innerText = num;
       td.className = "board-cell";
       if (calledNumbers.includes(num)) td.classList.add("called");
