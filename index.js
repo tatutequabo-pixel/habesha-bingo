@@ -1,3 +1,5 @@
+console.log("🔥 NEW BINGO SERVER VERSION LOADED 🔥");
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
