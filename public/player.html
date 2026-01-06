@@ -1,13 +1,33 @@
-<div id="joinScreen">
-  <input id="playerName" placeholder="Your Name">
-  <input id="playerCode" placeholder="Player Code">
-  <button id="joinBtn">Join</button>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habesha Bingo - Player</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Habesha Bingo</h1>
+    
+    <div id="loginPanel">
+      <input id="nameInput" type="text" placeholder="Enter your name">
+      <input id="codeInput" type="text" placeholder="Enter your code">
+      <button id="joinBtn">Join Game</button>
+    </div>
 
-<div id="gameScreen" style="display:none;">
-  <div class="bingo-header">
-    <span>B</span><span>I</span><span>N</span><span>G</span><span>O</span>
+    <div id="gamePanel" class="hidden">
+      <div class="bingo-board">
+        <div class="bingo-header">
+          <span>B</span><span>I</span><span>N</span><span>G</span><span>O</span>
+        </div>
+        <div id="boardNumbers" class="board-grid"></div>
+      </div>
+      <div id="winnerBanner" class="hidden"></div>
+    </div>
   </div>
-  <div id="board" class="board"></div>
-  <div id="called"></div>
-</div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="player.js"></script>
+</body>
+</html>

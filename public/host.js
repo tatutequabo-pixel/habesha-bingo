@@ -1,27 +1,25 @@
 const socket = io();
-let called = [];
 
-document.getElementById("loginBtn").onclick = () => {
-  socket.emit("hostJoin", hostPassword.value, codes => {
-    document.getElementById("codes").innerHTML =
-      codes.map(c => `<div>${c}</div>`).join("");
-  });
-};
+// Start game
+document.getElementById("startGameBtn").addEventListener("click", () => {
+  const password = prompt("Enter host password:");
+  socket.emit("start-game", password);
+});
 
-document.getElementById("callBtn").onclick = () => {
-  let n;
-  do { n = Math.floor(Math.random()*75)+1; }
-  while (called.includes(n));
-  called.push(n);
+// Display generated codes
+socket.on("game-started", (data) => {
+  const codesDiv = document.getElementById("codes");
+  codesDiv.innerHTML = "<h3>Player Codes:</h3>" + data.codes.join(", ");
+});
 
-  const letter =
-    n<=15?"B":n<=30?"I":n<=45?"N":n<=60?"G":"O";
+// Call number
+document.getElementById("callNumberBtn").addEventListener("click", () => {
+  const number = prompt("Enter number to call (e.g., B12):");
+  socket.emit("call-number", number);
+});
 
-  socket.emit("callNumber", `${letter}${n}`);
-  lastNumber.innerText = `${letter}${n}`;
-};
-
-document.getElementById("resetBtn").onclick = () => {
-  socket.emit("resetGame");
-};
+// Reset game
+document.getElementById("resetGameBtn").addEventListener("click", () => {
+  socket.emit("reset-game");
+});
 

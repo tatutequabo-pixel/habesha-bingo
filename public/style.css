@@ -1,56 +1,161 @@
+/* ================= BODY ================= */
 body {
-  margin: 0;
   font-family: 'Arial', sans-serif;
-  background: radial-gradient(circle at top left, #ffd9a0, #ffb347);
+  background: linear-gradient(to bottom, #0d0d0d, #1a1a1a);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+/* ================= CONTAINER ================= */
+.container {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* ================= HEADINGS ================= */
+h1, h2 {
+  margin-bottom: 15px;
+  color: #ffcc00;
+  text-shadow: 1px 1px 5px #000;
+}
+
+/* ================= INPUTS ================= */
+input {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+  width: calc(50% - 12px);
+  max-width: 200px;
+  font-size: 1em;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  background: #ff6600;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+/* ================= HIDDEN ================= */
+.hidden {
+  display: none;
+}
+
+/* ================= CODES CONTAINER ================= */
+.codes-container {
+  margin-bottom: 20px;
+  font-size: 1em;
+  word-break: break-word;
+  background: #222;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+/* ================= HOST CONTROLS ================= */
+.host-controls {
+  margin-bottom: 20px;
+}
+
+/* ================= BINGO BOARD ================= */
+.bingo-board {
+  margin: 0 auto 20px auto;
+  background: #111;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #ff6600;
+}
+
+.bingo-header {
+  display: flex;
+  justify-content: space-around;
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ffcc00;
+  text-shadow: 1px 1px 3px #000;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 60px);
+  grid-gap: 5px;
+  justify-content: center;
+}
+
+.board-cell {
+  width: 60px;
+  height: 60px;
+  background: #222;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  text-align: center;
-}
-.container {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-  width: 90%;
-  max-width: 400px;
-}
-h1 {
-  margin-bottom: 25px;
-  font-size: 2rem;
-  color: #c00;
-}
-p {
-  margin-bottom: 20px;
-  font-size: 1rem;
-  color: #333;
-}
-button {
-  width: 100%;
-  padding: 15px;
-  margin: 10px 0;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: 8px;
-  background: #c00;
-  color: white;
+  border-radius: 5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 1.2em;
+  transition: all 0.3s ease;
+  user-select: none;
 }
-button:hover {
-  background: #a00;
-  transform: scale(1.05);
+
+.board-cell.marked {
+  background: #00ff00;
+  color: #000;
+  font-weight: bold;
 }
-footer {
-  margin-top: 15px;
-  font-size: 0.8rem;
-  color: #666;
+
+.board-cell.called {
+  background: #ffcc00;
+  color: #000;
+  font-weight: bold;
+  animation: blink 0.5s ease;
 }
-@media (max-width: 500px) {
-  .container {
-    padding: 30px 20px;
+
+@keyframes blink {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ================= WINNER BANNER ================= */
+#winnerBanner,
+#winnerBannerHost {
+  margin-top: 20px;
+  font-size: 1.8em;
+  color: #ff0;
+  font-weight: bold;
+  text-shadow: 1px 1px 5px #000;
+}
+
+/* ================= RESPONSIVE ================= */
+@media screen and (max-width: 500px) {
+  .board-grid {
+    grid-template-columns: repeat(5, 50px);
+    grid-gap: 4px;
   }
-  h1 { font-size: 1.8rem; }
-  button { font-size: 1rem; padding: 12px; }
+
+  .board-cell {
+    width: 50px;
+    height: 50px;
+    font-size: 1em;
+  }
+
+  input {
+    width: calc(100% - 12px);
+    margin-bottom: 10px;
+  }
 }

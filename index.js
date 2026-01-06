@@ -1,117 +1,118 @@
 const express = require("express");
+const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
-const crypto = require("crypto");
-const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Serve static files
+const PORT = process.env.PORT || 3000;
+
+// Serve front-end
 app.use(express.static(path.join(__dirname, "public")));
 
+// Root route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// Host password
+const HOST_PASSWORD = "Hanilove1";
 
-// =======================
-// Bingo session
-// =======================
-let session = null;
+// Game state
+let activeCodes = []; // 30 unique codes per game
+let players = {}; // { code: { name, markedNumbers: [], hasBingo } }
+let calledNumbers = [];
 
-function generateCode() {
-  return "HB-" + crypto.randomBytes(2).toString("hex").toUpperCase();
-}
-
-function generateCard() {
-  const ranges = [
-    [1, 15], [16, 30], [31, 45], [46, 60], [61, 75]
-  ];
-  let card = [];
-  ranges.forEach(([min, max]) => {
-    let nums = [];
-    while (nums.length < 5) {
-      let n = Math.floor(Math.random() * (max - min + 1)) + min;
-      if (!nums.includes(n)) nums.push(n);
+// Helper: generate 30 unique codes
+function generatePlayerCodes(count = 30) {
+  const codes = new Set();
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  while (codes.size < count) {
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code += characters[Math.floor(Math.random() * characters.length)];
     }
-    card.push(...nums);
-  });
-  card[12] = 0; // free space
-  return card;
+    codes.add(code);
+  }
+  return Array.from(codes);
 }
 
-function createSession() {
-  session = {
-    active: true,
-    hostPassword: "Hanilove1",
-    codes: Array.from({ length: 30 }, () => ({ code: generateCode(), used: false })),
-    players: {},
-    winner: null
-  };
-  console.log("🎲 New session created");
-}
+// Socket.IO connection
+io.on("connection", (socket) => {
 
-createSession();
-
-// =======================
-// Socket.IO
-// =======================
-io.on("connection", socket => {
-
-  socket.on("hostJoin", (password, cb) => {
-    if (password !== session.hostPassword) return cb({ success: false });
-    socket.join("host");
-    cb({ success: true, codes: session.codes.map(c => c.code) });
+  // Host starts game
+  socket.on("start-game", (password) => {
+    if (password !== HOST_PASSWORD) {
+      socket.emit("error-message", "Invalid host password");
+      return;
+    }
+    activeCodes = generatePlayerCodes(30);
+    players = {};
+    calledNumbers = [];
+    io.emit("game-started", { codes: activeCodes });
   });
 
-  socket.on("playerJoin", ({ name, code }, cb) => {
-    if (!session.active) return cb({ ok: false, msg: "Game not active" });
-    const codeObj = session.codes.find(c => c.code === code && !c.used);
-    if (!codeObj) return cb({ ok: false, msg: "Invalid or used code" });
-
-    codeObj.used = true;
-    session.players[socket.id] = {
-      name,
-      card: generateCard(),
-      marked: Array(25).fill(false)
-    };
-    socket.join("players");
-    cb({ ok: true, card: session.players[socket.id].card });
+  // Player tries to join
+  socket.on("join-game", ({ name, code }) => {
+    if (!activeCodes.includes(code)) {
+      socket.emit("join-error", "Invalid code");
+      return;
+    }
+    players[code] = { name, markedNumbers: [], hasBingo: false, socketId: socket.id };
+    socket.emit("join-success", { code });
   });
 
-  socket.on("callNumber", num => {
-    if (!session.active) return;
-    io.to("players").emit("numberCalled", num);
+  // Host calls number
+  socket.on("call-number", (number) => {
+    if (!calledNumbers.includes(number)) {
+      calledNumbers.push(number);
+      io.emit("number-called", number);
+    }
   });
 
-  socket.on("bingo", () => {
-    if (session.winner || !session.active) return;
-    const player = session.players[socket.id];
-    if (!player) return;
+  // Player marks number
+  socket.on("mark-number", ({ code, number }) => {
+    if (!players[code] || players[code].hasBingo) return;
+    if (!players[code].markedNumbers.includes(number)) {
+      players[code].markedNumbers.push(number);
+    }
 
-    session.winner = player.name;
-    session.active = false;
-    io.emit("bingoWin", player.name);
-    console.log("🏆 BINGO WINNER:", player.name);
+    // Check Bingo
+    if (checkBingo(players[code].markedNumbers)) {
+      players[code].hasBingo = true;
+      io.emit("bingo-winner", { name: players[code].name });
+    }
   });
 
-  socket.on("resetGame", () => {
-    createSession();
-    io.emit("gameReset");
+  // Reset game
+  socket.on("reset-game", () => {
+    activeCodes = [];
+    players = {};
+    calledNumbers = [];
+    io.emit("game-reset");
   });
 
   socket.on("disconnect", () => {
-    delete session.players[socket.id];
+    // Optional: handle player disconnect
   });
 });
 
-// =======================
-// Start server
-// =======================
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`✅ Habesha Bingo running on port ${PORT}`));
+// Bingo detection (simple example: any full row/column/diagonal)
+function checkBingo(markedNumbers) {
+  // Assuming player board numbers are flat array 25 numbers (BINGO 5x5)
+  // This is a simple placeholder logic
+  const winningSets = [
+    [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24], // rows
+    [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24], // cols
+    [0,6,12,18,24],[4,8,12,16,20] // diagonals
+  ];
+
+  return winningSets.some(set => set.every(idx => markedNumbers.includes(idx)));
+}
+
+server.listen(PORT, () => console.log(`Habesha Bingo server running on port ${PORT}`));
 
 
 
