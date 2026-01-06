@@ -7,26 +7,23 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Habesha Bingo</h1>
-    
-    <div id="loginPanel">
-      <input id="nameInput" type="text" placeholder="Enter your name">
-      <input id="codeInput" type="text" placeholder="Enter your code">
-      <button id="joinBtn">Join Game</button>
-    </div>
-
-    <div id="gamePanel" class="hidden">
-      <div class="bingo-board">
-        <div class="bingo-header">
-          <span>B</span><span>I</span><span>N</span><span>G</span><span>O</span>
-        </div>
-        <div id="boardNumbers" class="board-grid"></div>
-      </div>
-      <div id="winnerBanner" class="hidden"></div>
-    </div>
+  <!-- ================= LOGIN PANEL ================= -->
+  <div id="loginPanel">
+    <h2>Join Habesha Bingo</h2>
+    <input type="text" id="playerName" placeholder="Enter your name" required>
+    <input type="text" id="playerCode" placeholder="Enter your code" required>
+    <button id="joinGameBtn">Join Game</button>
+    <p>Enter your name and unique code provided by the host.</p>
   </div>
 
+  <!-- ================= GAME PANEL ================= -->
+  <div id="gamePanel" class="hidden">
+    <h2>Your Bingo Board</h2>
+    <div id="playerBoard" class="bingo-board"></div>
+    <div id="winnerBanner" class="winner-banner"></div>
+  </div>
+
+  <!-- ================= SOCKET.IO ================= -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="player.js"></script>
 </body>
