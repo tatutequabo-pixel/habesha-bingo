@@ -1,78 +1,56 @@
-alert("🔥 NEW PLAYER.JS LOADED 🔥");
-
 const socket = io();
+const synth = window.speechSynthesis;
+let gameCode;
 
-const loginPanel = document.getElementById("loginPanel");
-const gamePanel = document.getElementById("gamePanel");
-const nameInput = document.getElementById("playerName");
-const codeInput = document.getElementById("playerCode");
-const joinBtn = document.getElementById("joinGameBtn");
-const boardDiv = document.getElementById("playerBoard");
-const winnerBanner = document.getElementById("winnerBanner");
+const board = document.getElementById("board");
 
-// ================= JOIN GAME =================
-joinBtn.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  const code = codeInput.value.trim();
-  if (!name || !code) return alert("Enter name and code");
-  socket.emit("join-game", { name, code });
-});
+function generateBoard() {
+  const letters = ["B","I","N","G","O"];
+  board.innerHTML = "";
 
-// ================= JOIN SUCCESS =================
-socket.on("join-success", ({ name, board, calledNumbers }) => {
-  loginPanel.classList.add("hidden");
-  gamePanel.classList.remove("hidden");
-  winnerBanner.classList.add("hidden");
-  renderBoard(board, calledNumbers);
-});
-
-// ================= JOIN ERROR =================
-socket.on("join-error", msg => alert(msg));
-
-// ================= NUMBER CALLED =================
-socket.on("number-called", (num) => {
-  document.querySelectorAll(".board-cell").forEach(cell => {
-    if (cell.innerText == num.replace(/[^\d]/g,"")) cell.classList.add("called");
+  letters.forEach(l => {
+    const h = document.createElement("div");
+    h.className = "cell header";
+    h.textContent = l;
+    board.appendChild(h);
   });
-});
 
-// ================= WINNER =================
-socket.on("bingo-winner", (data) => {
-  winnerBanner.innerText = `🎉 BINGO! Winner: ${data.name}`;
-  winnerBanner.classList.remove("hidden");
-});
-
-// ================= BOARD RENDER =================
-function renderBoard(board, calledNumbers = []) {
-  boardDiv.innerHTML = "";
-
-  const table = document.createElement("table");
-  table.className = "bingo-table";
-
-  // B I N G O header
-  const headerRow = document.createElement("tr");
-  ["B","I","N","G","O"].forEach(letter => {
-    const th = document.createElement("th");
-    th.innerText = letter;
-    headerRow.appendChild(th);
-  });
-  table.appendChild(headerRow);
-
-  // 5x5 grid
-  for (let row = 0; row < 5; row++) {
-    const tr = document.createElement("tr");
-    for (let col = 0; col < 5; col++) {
-      const td = document.createElement("td");
-      const num = board[row*5 + col];
-      td.innerText = num;
-      td.className = "board-cell";
-      if (calledNumbers.includes(num)) td.classList.add("called");
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
+  for (let i = 0; i < 25; i++) {
+    const c = document.createElement("div");
+    c.className = "cell";
+    c.textContent = Math.floor(Math.random() * 75) + 1;
+    board.appendChild(c);
   }
-
-  boardDiv.appendChild(table);
 }
 
+document.getElementById("joinBtn").onclick = () => {
+  gameCode = document.getElementById("game").value;
+  socket.emit("player:join", {
+    name: document.getElementById("name").value,
+    code: document.getElementById("code").value,
+    gameCode
+  });
+};
+
+socket.on("player:joined", () => {
+  document.getElementById("join").style.display = "none";
+  document.getElementById("gamePanel").style.display = "block";
+  generateBoard();
+});
+
+socket.on("numberCalled", ({ number, letter }) => {
+  const ball = document.getElementById("ball");
+  ball.className = "ball";
+  ball.textContent = `${letter}-${number}`;
+  synth.speak(new SpeechSynthesisUtterance(`${letter} ${number}`));
+});
+
+document.getElementById("bingo").onclick = () => {
+  socket.emit("player:claimBingo", gameCode);
+};
+
+socket.on("winnerAnnounced", name => {
+  document.getElementById("winner").textContent =
+    "🎉 WINNER: " + name;
+});
 

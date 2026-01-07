@@ -1,30 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Habesha Bingo - Player</title>
+  <title>Player</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ================= LOGIN PANEL ================= -->
-  <div id="loginPanel">
-    <h2>Join Habesha Bingo</h2>
-    <input type="text" id="playerName" placeholder="Enter your name" required>
-    <input type="text" id="playerCode" placeholder="Enter your code" required>
-    <button id="joinGameBtn">Join Game</button>
-    <p>Enter your name and unique code provided by the host.</p>
-  </div>
 
-  <!-- ================= GAME PANEL ================= -->
-  <div id="gamePanel" class="hidden">
-    <h2>Your Bingo Board</h2>
-    <div id="playerBoard" class="bingo-board"></div>
-    <div id="winnerBanner" class="winner-banner"></div>
-  </div>
+<h1>🎱 HABESHA BINGO</h1>
 
-  <!-- ================= SOCKET.IO ================= -->
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="player.js"></script>
+<div id="join">
+  <input id="name" placeholder="Name">
+  <input id="code" placeholder="Player Code">
+  <input id="game" placeholder="Game Code">
+  <button id="joinBtn">Join</button>
+</div>
+
+<div id="gamePanel" style="display:none;">
+  <div id="ball"></div>
+  <div class="board" id="board"></div>
+  <button id="bingo">BINGO!</button>
+  <h2 id="winner"></h2>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="player.js"></script>
 </body>
 </html>

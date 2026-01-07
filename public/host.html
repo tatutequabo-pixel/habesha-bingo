@@ -1,44 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Habesha Bingo - Host</title>
+  <title>Host</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ================= LOGIN PANEL ================= -->
-  <div id="loginPanel">
-    <h2>Host Login</h2>
-    <input type="password" id="hostPassword" placeholder="Enter Host Password" required>
-    <button id="startGameBtn">Start Game</button>
-    <p>Password: <strong>Hanilove1</strong></p>
-  </div>
 
-  <!-- ================= HOST PANEL ================= -->
-  <div id="hostPanel" class="hidden">
-    <h2>Host Panel</h2>
+<h1>🎰 HOST PANEL</h1>
 
-    <!-- Player codes -->
-    <div id="codes"></div>
+<input id="password" type="password" placeholder="Password">
+<button id="start">Start Game</button>
 
-    <!-- Bingo board preview -->
-    <h3>Board Preview</h3>
-    <div id="boardPreview" class="bingo-board"></div>
+<div id="panel" style="display:none;">
+  <h2>Game Code: <span id="gameCode"></span></h2>
+  <div id="ball"></div>
+  <div class="numbers" id="numbers"></div>
+  <h2 id="winner"></h2>
+</div>
 
-    <!-- Number input -->
-    <input type="text" id="numberInput" placeholder="Enter number (e.g., B12)">
-    <button id="callNumberBtn">Call Number</button>
-
-    <!-- Winner Banner -->
-    <div id="winnerBannerHost" class="winner-banner"></div>
-
-    <!-- Reset -->
-    <button id="resetGameBtn">Reset Game</button>
-  </div>
-
-  <!-- ================= SOCKET.IO ================= -->
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="host.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="host.js"></script>
 </body>
 </html>
