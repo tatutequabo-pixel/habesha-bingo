@@ -1,26 +1,19 @@
 const socket = io();
 
-const urlParams = new URLSearchParams(window.location.search);
-let gameCode = urlParams.get("game");
-const gameCodeDisplay = document.getElementById("gameCodeDisplay");
 const playerNameInput = document.getElementById("playerName");
 const playerCodeInput = document.getElementById("playerCode");
 const joinBtn = document.getElementById("joinBtn");
 const joinGameDiv = document.getElementById("joinGameDiv");
 const gameBoardDiv = document.getElementById("gameBoardDiv");
+const gameCodeDisplay = document.getElementById("gameCodeDisplay");
 const bingoBoard = document.getElementById("bingoBoard");
 const bingoBtn = document.getElementById("bingoBtn");
 const winnerBanner = document.getElementById("winnerBanner");
 const calledBalls = document.getElementById("calledBalls");
 
+let gameCode = null;
 let calledNumbers = [];
 let markedNumbers = new Set();
-
-if (!gameCode) {
-  alert("Open this page with the player link from host (e.g., ?game=ABCDE)");
-}
-
-gameCodeDisplay.textContent = gameCode;
 
 joinBtn.addEventListener("click", () => {
   const playerName = playerNameInput.value.trim();
@@ -28,14 +21,18 @@ joinBtn.addEventListener("click", () => {
 
   if (!playerName || !playerCode) return alert("Enter name and player code");
 
-  socket.emit("player-join", { gameCode, playerCode, playerName }, (response) => {
+  socket.emit("player-join", { playerCode, playerName }, (response) => {
     if (!response.success) return alert(response.message);
+
+    gameCode = response.gameCode;
+    calledNumbers = response.calledNumbers;
+    markedNumbers = new Set();
 
     joinGameDiv.style.display = "none";
     gameBoardDiv.style.display = "block";
 
-    calledNumbers = response.calledNumbers;
-    markedNumbers = new Set();
+    gameCodeDisplay.textContent = gameCode;
+
     buildBingoBoard();
     updateCalledBalls();
     bingoBtn.disabled = false;
