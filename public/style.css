@@ -1,66 +1,15 @@
 body {
-  background: radial-gradient(circle, #222, #000);
-  color: gold;
+  background-color: black;
+  color: yellow;
   font-family: Arial, sans-serif;
   text-align: center;
+  padding: 20px;
 }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  max-width: 400px;
-  margin: 20px auto;
-}
-
-.cell {
-  background: #111;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid gold;
-}
-
-.header {
-  background: darkred;
+button {
   font-weight: bold;
 }
 
-.numbers {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 6px;
-  max-width: 500px;
-  margin: 20px auto;
-}
-
-.num {
-  background: #222;
-  padding: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.num.called {
-  background: #555;
-  pointer-events: none;
-}
-
-.ball {
-  width: 120px;
-  height: 120px;
-  margin: 20px auto;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #fff, red);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  font-weight: bold;
-  color: #000;
-  animation: pop 0.5s ease;
-}
-
-@keyframes pop {
-  from { transform: scale(0.2); }
-  to { transform: scale(1); }
+#playerCodesContainer span {
+  font-family: monospace;
 }

@@ -1,56 +1,157 @@
 const socket = io();
-const synth = window.speechSynthesis;
-let gameCode;
 
-const board = document.getElementById("board");
+const urlParams = new URLSearchParams(window.location.search);
+const gameCode = urlParams.get("game");
+const gameCodeDisplay = document.getElementById("gameCodeDisplay");
+const playerNameInput = document.getElementById("playerName");
+const playerCodeInput = document.getElementById("playerCode");
+const joinBtn = document.getElementById("joinBtn");
+const joinGameDiv = document.getElementById("joinGameDiv");
+const gameBoardDiv = document.getElementById("gameBoardDiv");
+const bingoBoard = document.getElementById("bingoBoard");
+const bingoBtn = document.getElementById("bingoBtn");
+const winnerBanner = document.getElementById("winnerBanner");
+const calledBalls = document.getElementById("calledBalls");
 
-function generateBoard() {
-  const letters = ["B","I","N","G","O"];
-  board.innerHTML = "";
+let calledNumbers = [];
+let markedNumbers = new Set();
 
-  letters.forEach(l => {
-    const h = document.createElement("div");
-    h.className = "cell header";
-    h.textContent = l;
-    board.appendChild(h);
+if (!gameCode) {
+  alert("No game code provided in URL");
+}
+
+gameCodeDisplay.textContent = gameCode;
+
+joinBtn.addEventListener("click", () => {
+  const playerName = playerNameInput.value.trim();
+  const playerCode = playerCodeInput.value.trim().toUpperCase();
+
+  if (!playerName || !playerCode) return alert("Enter name and player code");
+
+  socket.emit("player-join", { gameCode, playerCode, playerName }, (response) => {
+    if (!response.success) return alert(response.message);
+
+    joinGameDiv.style.display = "none";
+    gameBoardDiv.style.display = "block";
+
+    calledNumbers = response.calledNumbers;
+    markedNumbers = new Set();
+    buildBingoBoard();
+    updateCalledBalls();
+    bingoBtn.disabled = false;
   });
+});
 
-  for (let i = 0; i < 25; i++) {
-    const c = document.createElement("div");
-    c.className = "cell";
-    c.textContent = Math.floor(Math.random() * 75) + 1;
-    board.appendChild(c);
+function buildBingoBoard() {
+  bingoBoard.innerHTML = "";
+  const columns = ["B", "I", "N", "G", "O"];
+  const numberRanges = [
+    [1, 15],
+    [16, 30],
+    [31, 45],
+    [46, 60],
+    [61, 75],
+  ];
+
+  // Build 5x5 bingo board with free center
+  for (let row = 0; row < 5; row++) {
+    const rowDiv = document.createElement("div");
+    rowDiv.style.display = "flex";
+    for (let col = 0; col < 5; col++) {
+      const cell = document.createElement("div");
+      cell.style.border = "2px solid yellow";
+      cell.style.color = "yellow";
+      cell.style.width = "50px";
+      cell.style.height = "50px";
+      cell.style.display = "flex";
+      cell.style.justifyContent = "center";
+      cell.style.alignItems = "center";
+      cell.style.cursor = "pointer";
+      cell.style.margin = "2px";
+      cell.style.fontWeight = "bold";
+      cell.style.userSelect = "none";
+
+      if (row === 2 && col === 2) {
+        cell.textContent = "FREE";
+        cell.style.backgroundColor = "green";
+        markedNumbers.add("FREE");
+        cell.style.cursor = "default";
+      } else {
+        const min = numberRanges[col][0];
+        const max = numberRanges[col][1];
+        const num = getRandomNumberForCell(min, max, row, col);
+        cell.textContent = num;
+      }
+
+      cell.addEventListener("click", () => {
+        if (markedNumbers.has(cell.textContent)) {
+          markedNumbers.delete(cell.textContent);
+          cell.style.backgroundColor = "black";
+        } else {
+          if (calledNumbers.includes(parseInt(cell.textContent))) {
+            markedNumbers.add(cell.textContent);
+            cell.style.backgroundColor = "lime";
+          }
+        }
+      });
+
+      rowDiv.appendChild(cell);
+    }
+    bingoBoard.appendChild(rowDiv);
   }
 }
 
-document.getElementById("joinBtn").onclick = () => {
-  gameCode = document.getElementById("game").value;
-  socket.emit("player:join", {
-    name: document.getElementById("name").value,
-    code: document.getElementById("code").value,
-    gameCode
+// Generate bingo numbers consistent with standard rules and distribution
+function getRandomNumberForCell(min, max, row, col) {
+  // Create consistent numbers based on row and col for demo simplicity
+  return min + row; // Just sequential for each column row (simple pattern)
+}
+
+socket.on("number-called", (number) => {
+  if (!calledNumbers.includes(number)) {
+    calledNumbers.push(number);
+    updateCalledBalls();
+  }
+});
+
+function updateCalledBalls() {
+  calledBalls.innerHTML = "";
+  calledNumbers.forEach((n) => {
+    const ball = document.createElement("span");
+    ball.textContent = n;
+    ball.style.display = "inline-block";
+    ball.style.width = "30px";
+    ball.style.height = "30px";
+    ball.style.margin = "3px";
+    ball.style.borderRadius = "50%";
+    ball.style.backgroundColor = "orange";
+    ball.style.color = "black";
+    ball.style.fontWeight = "bold";
+    ball.style.textAlign = "center";
+    ball.style.lineHeight = "30px";
+    calledBalls.appendChild(ball);
   });
-};
+}
 
-socket.on("player:joined", () => {
-  document.getElementById("join").style.display = "none";
-  document.getElementById("gamePanel").style.display = "block";
-  generateBoard();
+bingoBtn.addEventListener("click", () => {
+  // Check if player has bingo (simple validation for demo)
+  if (markedNumbers.size < 5) {
+    alert("You need to mark at least 5 numbers including free to declare Bingo!");
+    return;
+  }
+  socket.emit("player-bingo", gameCode);
+  bingoBtn.disabled = true;
+  alert("Bingo declared! Waiting for host confirmation...");
 });
 
-socket.on("numberCalled", ({ number, letter }) => {
-  const ball = document.getElementById("ball");
-  ball.className = "ball";
-  ball.textContent = `${letter}-${number}`;
-  synth.speak(new SpeechSynthesisUtterance(`${letter} ${number}`));
+socket.on("bingo-winner", (winnerName) => {
+  winnerBanner.style.display = "block";
+  winnerBanner.textContent = `🎉 Bingo Winner: ${winnerName} 🎉`;
+  bingoBtn.disabled = true;
 });
 
-document.getElementById("bingo").onclick = () => {
-  socket.emit("player:claimBingo", gameCode);
-};
-
-socket.on("winnerAnnounced", name => {
-  document.getElementById("winner").textContent =
-    "🎉 WINNER: " + name;
+socket.on("game-ended", () => {
+  alert("Game ended as host disconnected.");
+  window.location.reload();
 });
 

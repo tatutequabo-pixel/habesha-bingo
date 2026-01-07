@@ -1,94 +1,134 @@
 const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
+const path = require("path");
 
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 const HOST_PASSWORD = "Hanilove1";
+const MAX_PLAYERS_PER_GAME = 30;
+
+// Structure: games = { gameCode: { hostId, playerCodes: {}, calledNumbers: [], players: {}, winnerDeclared: false } }
 const games = {};
 
-function generateCodes(count = 30) {
-  const set = new Set();
-  while (set.size < count) {
-    set.add(Math.random().toString(36).substring(2, 8).toUpperCase());
+function generateGameCode() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let code = "";
+  for (let i = 0; i < 5; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return [...set];
+  return code;
 }
 
-function letter(num) {
-  if (num <= 15) return "B";
-  if (num <= 30) return "I";
-  if (num <= 45) return "N";
-  if (num <= 60) return "G";
-  return "O";
+function generateUniquePlayerCodes() {
+  const codes = new Set();
+  while (codes.size < MAX_PLAYERS_PER_GAME) {
+    codes.add(Math.random().toString(36).slice(2, 7).toUpperCase());
+  }
+  return Array.from(codes);
 }
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
-  socket.on("host:createGame", password => {
+  socket.on("host-join", (password, callback) => {
     if (password !== HOST_PASSWORD) {
-      return socket.emit("host:error", "Wrong password");
+      return callback({ success: false, message: "Incorrect password" });
     }
+    // Create new game room and data
+    let newGameCode;
+    do {
+      newGameCode = generateGameCode();
+    } while (games[newGameCode]);
 
-    const gameCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+    const playerCodes = generateUniquePlayerCodes();
 
-    games[gameCode] = {
+    games[newGameCode] = {
       hostId: socket.id,
-      codes: generateCodes(),
-      players: {},
-      called: [],
-      winner: null
+      playerCodes: playerCodes.reduce((acc, c) => {
+        acc[c] = { used: false };
+        return acc;
+      }, {}),
+      calledNumbers: [],
+      players: {}, // player socketId -> { name, code }
+      winnerDeclared: false,
     };
 
-    socket.join(gameCode);
-    socket.emit("host:gameCreated", { gameCode });
+    socket.join(newGameCode);
+    console.log(`Host ${socket.id} created game ${newGameCode}`);
+
+    callback({ success: true, gameCode: newGameCode, playerCodes });
   });
 
-  socket.on("player:join", ({ name, code, gameCode }) => {
+  socket.on("player-join", ({ gameCode, playerCode, playerName }, callback) => {
     const game = games[gameCode];
-    if (!game || !game.codes.includes(code)) {
-      return socket.emit("player:error", "Invalid game or code");
+    if (!game) return callback({ success: false, message: "Game not found" });
+
+    const codeInfo = game.playerCodes[playerCode];
+    if (!codeInfo) return callback({ success: false, message: "Invalid player code" });
+    if (codeInfo.used) return callback({ success: false, message: "Player code already used" });
+
+    codeInfo.used = true;
+    game.players[socket.id] = { name: playerName, code: playerCode };
+    socket.join(gameCode);
+    console.log(`Player ${playerName} joined game ${gameCode} with code ${playerCode}`);
+
+    callback({ success: true, calledNumbers: game.calledNumbers });
+  });
+
+  socket.on("host-call-number", ({ gameCode, number }) => {
+    const game = games[gameCode];
+    if (!game || game.hostId !== socket.id) return;
+
+    if (!game.calledNumbers.includes(number)) {
+      game.calledNumbers.push(number);
+      // Notify all players and host in the room
+      io.to(gameCode).emit("number-called", number);
     }
-
-    game.players[socket.id] = { name };
-    socket.join(gameCode);
-    socket.emit("player:joined");
   });
 
-  socket.on("host:callNumber", ({ gameCode, number }) => {
+  socket.on("player-bingo", (gameCode) => {
     const game = games[gameCode];
-    if (!game || game.called.includes(number)) return;
+    if (!game || game.winnerDeclared) return;
+    game.winnerDeclared = true;
 
-    game.called.push(number);
+    const winner = game.players[socket.id];
+    if (!winner) return;
 
-    io.to(gameCode).emit("numberCalled", {
-      number,
-      letter: letter(number)
-    });
+    // Announce winner to all players and host
+    io.to(gameCode).emit("bingo-winner", winner.name);
   });
 
-  socket.on("player:claimBingo", gameCode => {
-    const game = games[gameCode];
-    if (!game || game.winner) return;
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
 
-    const player = game.players[socket.id];
-    if (!player) return;
-
-    game.winner = player.name;
-    io.to(gameCode).emit("winnerAnnounced", player.name);
+    // Remove player or host from games
+    for (const [gameCode, game] of Object.entries(games)) {
+      if (game.hostId === socket.id) {
+        // End game if host disconnects
+        io.to(gameCode).emit("game-ended");
+        delete games[gameCode];
+        console.log(`Game ${gameCode} ended because host disconnected.`);
+        break;
+      }
+      if (game.players[socket.id]) {
+        // Mark player code as unused for reuse
+        const playerCode = game.players[socket.id].code;
+        if (game.playerCodes[playerCode]) {
+          game.playerCodes[playerCode].used = false;
+        }
+        delete game.players[socket.id];
+        break;
+      }
+    }
   });
-
 });
 
-server.listen(process.env.PORT || 3000, () =>
-  console.log("Habesha Bingo running")
-);
-
-
+const PORT = process.env.PORT || 3000;
+http.listen(PORT, () => {
+  console.log(`Habesha Bingo running on port ${PORT}`);
+});
 
 
 

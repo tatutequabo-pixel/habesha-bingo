@@ -1,23 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Host</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Host - Habesha Bingo</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-<h1>🎰 HOST PANEL</h1>
-
-<input id="password" type="password" placeholder="Password">
-<button id="start">Start Game</button>
-
-<div id="panel" style="display:none;">
-  <h2>Game Code: <span id="gameCode"></span></h2>
-  <div id="ball"></div>
-  <div class="numbers" id="numbers"></div>
-  <h2 id="winner"></h2>
+<div id="hostPanel">
+  <h1>🎰 HOST PANEL</h1>
+  <input type="password" id="hostPassword" placeholder="Enter host password" />
+  <button id="startGameBtn">Start Game</button>
+  <div id="gameInfo" style="display:none;">
+    <h2>Game Code: <span id="gameCodeDisplay"></span></h2>
+    <h3>Player Codes (Share with players):</h3>
+    <div id="playerCodesContainer" style="display:flex; flex-wrap: wrap; gap: 5px;"></div>
+    <h3>Call Numbers</h3>
+    <div id="numberBoard"></div>
+    <div id="calledNumbersContainer"><h3>Called Numbers:</h3><div id="calledNumbers"></div></div>
+  </div>
 </div>
-
 <script src="/socket.io/socket.io.js"></script>
 <script src="host.js"></script>
 </body>
