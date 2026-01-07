@@ -1,7 +1,7 @@
 const socket = io();
 
 const urlParams = new URLSearchParams(window.location.search);
-const gameCode = urlParams.get("game");
+let gameCode = urlParams.get("game");
 const gameCodeDisplay = document.getElementById("gameCodeDisplay");
 const playerNameInput = document.getElementById("playerName");
 const playerCodeInput = document.getElementById("playerCode");
@@ -17,7 +17,7 @@ let calledNumbers = [];
 let markedNumbers = new Set();
 
 if (!gameCode) {
-  alert("No game code provided in URL");
+  alert("Open this page with the player link from host (e.g., ?game=ABCDE)");
 }
 
 gameCodeDisplay.textContent = gameCode;
@@ -44,7 +44,6 @@ joinBtn.addEventListener("click", () => {
 
 function buildBingoBoard() {
   bingoBoard.innerHTML = "";
-  const columns = ["B", "I", "N", "G", "O"];
   const numberRanges = [
     [1, 15],
     [16, 30],
@@ -53,7 +52,6 @@ function buildBingoBoard() {
     [61, 75],
   ];
 
-  // Build 5x5 bingo board with free center
   for (let row = 0; row < 5; row++) {
     const rowDiv = document.createElement("div");
     rowDiv.style.display = "flex";
@@ -79,7 +77,7 @@ function buildBingoBoard() {
       } else {
         const min = numberRanges[col][0];
         const max = numberRanges[col][1];
-        const num = getRandomNumberForCell(min, max, row, col);
+        const num = min + row;
         cell.textContent = num;
       }
 
@@ -99,12 +97,6 @@ function buildBingoBoard() {
     }
     bingoBoard.appendChild(rowDiv);
   }
-}
-
-// Generate bingo numbers consistent with standard rules and distribution
-function getRandomNumberForCell(min, max, row, col) {
-  // Create consistent numbers based on row and col for demo simplicity
-  return min + row; // Just sequential for each column row (simple pattern)
 }
 
 socket.on("number-called", (number) => {
@@ -134,7 +126,6 @@ function updateCalledBalls() {
 }
 
 bingoBtn.addEventListener("click", () => {
-  // Check if player has bingo (simple validation for demo)
   if (markedNumbers.size < 5) {
     alert("You need to mark at least 5 numbers including free to declare Bingo!");
     return;

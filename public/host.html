@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+` <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -11,13 +11,24 @@
   <h1>🎰 HOST PANEL</h1>
   <input type="password" id="hostPassword" placeholder="Enter host password" />
   <button id="startGameBtn">Start Game</button>
+
   <div id="gameInfo" style="display:none;">
     <h2>Game Code: <span id="gameCodeDisplay"></span></h2>
     <h3>Player Codes (Share with players):</h3>
     <div id="playerCodesContainer" style="display:flex; flex-wrap: wrap; gap: 5px;"></div>
+
+    <!-- Player link -->
+    <div id="playerLinkDiv" style="margin-top:15px; display:none;">
+      <h3>Player Link (Share this):</h3>
+      <input type="text" id="playerLinkInput" readonly style="width:80%; font-size:16px;" />
+    </div>
+
     <h3>Call Numbers</h3>
     <div id="numberBoard"></div>
-    <div id="calledNumbersContainer"><h3>Called Numbers:</h3><div id="calledNumbers"></div></div>
+    <div id="calledNumbersContainer">
+      <h3>Called Numbers:</h3>
+      <div id="calledNumbers"></div>
+    </div>
   </div>
 </div>
 <script src="/socket.io/socket.io.js"></script>

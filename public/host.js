@@ -1,7 +1,5 @@
 const socket = io();
 
-const HOST_PASSWORD = "Hanilove1";
-
 const startGameBtn = document.getElementById("startGameBtn");
 const hostPasswordInput = document.getElementById("hostPassword");
 const gameCodeDisplay = document.getElementById("gameCodeDisplay");
@@ -9,6 +7,8 @@ const playerCodesContainer = document.getElementById("playerCodesContainer");
 const numberBoard = document.getElementById("numberBoard");
 const calledNumbersDiv = document.getElementById("calledNumbers");
 const gameInfoDiv = document.getElementById("gameInfo");
+const playerLinkDiv = document.getElementById("playerLinkDiv");
+const playerLinkInput = document.getElementById("playerLinkInput");
 
 let currentGameCode = null;
 let calledNumbers = [];
@@ -22,6 +22,7 @@ startGameBtn.addEventListener("click", () => {
 
     currentGameCode = response.gameCode;
     gameCodeDisplay.textContent = currentGameCode;
+
     playerCodesContainer.innerHTML = "";
     response.playerCodes.forEach(code => {
       const span = document.createElement("span");
@@ -32,6 +33,12 @@ startGameBtn.addEventListener("click", () => {
       span.style.borderRadius = "5px";
       playerCodesContainer.appendChild(span);
     });
+
+    // Show player link
+    const baseUrl = window.location.origin;
+    const playerUrl = `${baseUrl}/player.html?game=${currentGameCode}`;
+    playerLinkInput.value = playerUrl;
+    playerLinkDiv.style.display = "block";
 
     gameInfoDiv.style.display = "block";
     hostPasswordInput.disabled = true;
@@ -56,12 +63,12 @@ function buildNumberBoard() {
     btn.style.cursor = "pointer";
 
     btn.addEventListener("click", () => {
-      if (calledNumbers.includes(i)) return; // Already called
+      if (calledNumbers.includes(i)) return;
       calledNumbers.push(i);
       updateCalledNumbers();
       socket.emit("host-call-number", { gameCode: currentGameCode, number: i });
       playVoiceCall(i);
-      btn.style.backgroundColor = "#444"; // mark as called
+      btn.style.backgroundColor = "#444";
     });
 
     numberBoard.appendChild(btn);
@@ -82,17 +89,16 @@ function updateCalledNumbers() {
 function playVoiceCall(number) {
   const bingos = ["B", "I", "N", "G", "O"];
   let prefix = "";
-  if (number >= 1 && number <= 15) prefix = bingos[0];
-  else if (number >= 16 && number <= 30) prefix = bingos[1];
-  else if (number >= 31 && number <= 45) prefix = bingos[2];
-  else if (number >= 46 && number <= 60) prefix = bingos[3];
-  else if (number >= 61 && number <= 75) prefix = bingos[4];
+  if (number <= 15) prefix = bingos[0];
+  else if (number <= 30) prefix = bingos[1];
+  else if (number <= 45) prefix = bingos[2];
+  else if (number <= 60) prefix = bingos[3];
+  else prefix = bingos[4];
 
   const msg = new SpeechSynthesisUtterance(`${prefix} ${number}`);
   window.speechSynthesis.speak(msg);
 }
 
-// Listen for new calls from server (to sync in case)
 socket.on("number-called", (number) => {
   if (!calledNumbers.includes(number)) {
     calledNumbers.push(number);
@@ -104,9 +110,7 @@ socket.on("number-called", (number) => {
 function markButtonCalled(number) {
   const buttons = numberBoard.querySelectorAll("button");
   buttons.forEach(btn => {
-    if (parseInt(btn.textContent) === number) {
-      btn.style.backgroundColor = "#444";
-    }
+    if (parseInt(btn.textContent) === number) btn.style.backgroundColor = "#444";
   });
 }
 
