@@ -1,37 +1,32 @@
-` <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Host - Habesha Bingo</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Habesha Bingo - Host Panel</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div id="hostPanel">
-  <h1>🎰 HOST PANEL</h1>
-  <input type="password" id="hostPassword" placeholder="Enter host password" />
-  <button id="startGameBtn">Start Game</button>
+  <div class="container">
+    <h1>Habesha Bingo - Host Panel</h1>
+    <button id="create-game-btn" class="btn primary-btn">Create New Game</button>
+    
+    <section id="game-info" style="display:none;">
+      <h2>Game Code: <span id="game-code-display"></span></h2>
+      
+      <h3>Player Codes (Share these)</h3>
+      <ul id="codes-list" class="codes-list"></ul>
+      
+      <button id="start-game-btn" class="btn start-btn" disabled>Start Auto Calling Numbers</button>
+      
+      <h3>Called Numbers</h3>
+      <div id="called-numbers" class="called-numbers"></div>
 
-  <div id="gameInfo" style="display:none;">
-    <h2>Game Code: <span id="gameCodeDisplay"></span></h2>
-    <h3>Player Codes (Share with players):</h3>
-    <div id="playerCodesContainer" style="display:flex; flex-wrap: wrap; gap: 5px;"></div>
-
-    <!-- Player link -->
-    <div id="playerLinkDiv" style="margin-top:15px; display:none;">
-      <h3>Player Link (Share this):</h3>
-      <input type="text" id="playerLinkInput" readonly style="width:80%; font-size:16px;" />
-    </div>
-
-    <h3>Call Numbers</h3>
-    <div id="numberBoard"></div>
-    <div id="calledNumbersContainer">
-      <h3>Called Numbers:</h3>
-      <div id="calledNumbers"></div>
-    </div>
+      <div id="winner-banner" class="winner-banner" style="display:none;"></div>
+    </section>
   </div>
-</div>
-<script src="/socket.io/socket.io.js"></script>
-<script src="host.js"></script>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="host.js"></script>
 </body>
 </html>

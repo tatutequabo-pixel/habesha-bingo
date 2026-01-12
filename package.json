@@ -1,13 +1,27 @@
 {
   "name": "habesha-bingo",
   "version": "1.0.0",
+  "description": "Real-world style Habesha Bingo game with host and player panels, auto calling and voice.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
+  "keywords": [
+    "bingo",
+    "habesha",
+    "game",
+    "socket.io",
+    "realtime"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
 

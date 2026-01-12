@@ -1,145 +1,112 @@
 const socket = io();
 
-const playerNameInput = document.getElementById("playerName");
-const playerCodeInput = document.getElementById("playerCode");
-const joinBtn = document.getElementById("joinBtn");
-const joinGameDiv = document.getElementById("joinGameDiv");
-const gameBoardDiv = document.getElementById("gameBoardDiv");
-const gameCodeDisplay = document.getElementById("gameCodeDisplay");
-const bingoBoard = document.getElementById("bingoBoard");
-const bingoBtn = document.getElementById("bingoBtn");
-const winnerBanner = document.getElementById("winnerBanner");
-const calledBalls = document.getElementById("calledBalls");
-
+let playerBoard = [];
+let marked = [];
 let gameCode = null;
-let calledNumbers = [];
-let markedNumbers = new Set();
 
-joinBtn.addEventListener("click", () => {
-  const playerName = playerNameInput.value.trim();
-  const playerCode = playerCodeInput.value.trim().toUpperCase();
+const boardDiv = document.getElementById("board");
+const joinBtn = document.getElementById("join-btn");
+const bingoBtn = document.getElementById("bingo-btn");
+const nameInput = document.getElementById("player-name");
+const codeInput = document.getElementById("player-code");
+const joinSection = document.getElementById("join-section");
+const gameSection = document.getElementById("game-section");
+const winnerBanner = document.getElementById("winner-banner");
 
-  if (!playerName || !playerCode) return alert("Enter name and player code");
+bingoBtn.disabled = true;
+gameSection.style.display = "none";
+winnerBanner.style.display = "none";
 
-  socket.emit("player-join", { playerCode, playerName }, (response) => {
-    if (!response.success) return alert(response.message);
+joinBtn.onclick = () => {
+  const name = nameInput.value.trim();
+  const code = codeInput.value.trim().toUpperCase();
 
-    gameCode = response.gameCode;
-    calledNumbers = response.calledNumbers;
-    markedNumbers = new Set();
-
-    joinGameDiv.style.display = "none";
-    gameBoardDiv.style.display = "block";
-
-    gameCodeDisplay.textContent = gameCode;
-
-    buildBingoBoard();
-    updateCalledBalls();
-    bingoBtn.disabled = false;
-  });
-});
-
-function buildBingoBoard() {
-  bingoBoard.innerHTML = "";
-  const numberRanges = [
-    [1, 15],
-    [16, 30],
-    [31, 45],
-    [46, 60],
-    [61, 75],
-  ];
-
-  for (let row = 0; row < 5; row++) {
-    const rowDiv = document.createElement("div");
-    rowDiv.style.display = "flex";
-    for (let col = 0; col < 5; col++) {
-      const cell = document.createElement("div");
-      cell.style.border = "2px solid yellow";
-      cell.style.color = "yellow";
-      cell.style.width = "50px";
-      cell.style.height = "50px";
-      cell.style.display = "flex";
-      cell.style.justifyContent = "center";
-      cell.style.alignItems = "center";
-      cell.style.cursor = "pointer";
-      cell.style.margin = "2px";
-      cell.style.fontWeight = "bold";
-      cell.style.userSelect = "none";
-
-      if (row === 2 && col === 2) {
-        cell.textContent = "FREE";
-        cell.style.backgroundColor = "green";
-        markedNumbers.add("FREE");
-        cell.style.cursor = "default";
-      } else {
-        const min = numberRanges[col][0];
-        const max = numberRanges[col][1];
-        const num = min + row;
-        cell.textContent = num;
-      }
-
-      cell.addEventListener("click", () => {
-        if (markedNumbers.has(cell.textContent)) {
-          markedNumbers.delete(cell.textContent);
-          cell.style.backgroundColor = "black";
-        } else {
-          if (calledNumbers.includes(parseInt(cell.textContent))) {
-            markedNumbers.add(cell.textContent);
-            cell.style.backgroundColor = "lime";
-          }
-        }
-      });
-
-      rowDiv.appendChild(cell);
-    }
-    bingoBoard.appendChild(rowDiv);
-  }
-}
-
-socket.on("number-called", (number) => {
-  if (!calledNumbers.includes(number)) {
-    calledNumbers.push(number);
-    updateCalledBalls();
-  }
-});
-
-function updateCalledBalls() {
-  calledBalls.innerHTML = "";
-  calledNumbers.forEach((n) => {
-    const ball = document.createElement("span");
-    ball.textContent = n;
-    ball.style.display = "inline-block";
-    ball.style.width = "30px";
-    ball.style.height = "30px";
-    ball.style.margin = "3px";
-    ball.style.borderRadius = "50%";
-    ball.style.backgroundColor = "orange";
-    ball.style.color = "black";
-    ball.style.fontWeight = "bold";
-    ball.style.textAlign = "center";
-    ball.style.lineHeight = "30px";
-    calledBalls.appendChild(ball);
-  });
-}
-
-bingoBtn.addEventListener("click", () => {
-  if (markedNumbers.size < 5) {
-    alert("You need to mark at least 5 numbers including free to declare Bingo!");
+  if (!name || !code) {
+    alert("Enter your name and player code");
     return;
   }
-  socket.emit("player-bingo", gameCode);
-  bingoBtn.disabled = true;
-  alert("Bingo declared! Waiting for host confirmation...");
+
+  // This should be the actual game code shared by the host
+  gameCode = window.location.search.split("gameCode=")[1]; 
+  if (!gameCode) {
+    alert("Game code missing in URL");
+    return;
+  }
+
+  socket.emit("player-join-game", { gameCode, playerCode: code, playerName: name });
+};
+
+socket.on("join-error", (msg) => {
+  alert(msg);
 });
+
+socket.on("board-assigned", (board) => {
+  playerBoard = board;
+  marked = Array(5)
+    .fill(0)
+    .map(() => Array(5).fill(false));
+  // Mark center free space
+  marked[2][2] = true;
+
+  joinSection.style.display = "none";
+  gameSection.style.display = "block";
+  bingoBtn.disabled = false;
+  renderBoard();
+});
+
+socket.on("number-called", (number) => {
+  markNumber(number);
+  renderBoard();
+  // Optional voice call of number here
+});
+
+bingoBtn.onclick = () => {
+  socket.emit("player-bingo", gameCode);
+};
 
 socket.on("bingo-winner", (winnerName) => {
   winnerBanner.style.display = "block";
-  winnerBanner.textContent = `🎉 Bingo Winner: ${winnerName} 🎉`;
+  winnerBanner.textContent = `🎉 Bingo Winner: ${winnerName}`;
   bingoBtn.disabled = true;
 });
 
+socket.on("bingo-invalid", (msg) => {
+  alert(msg);
+});
+
 socket.on("game-ended", () => {
-  alert("Game ended as host disconnected.");
+  alert("Game ended.");
   window.location.reload();
 });
+
+function markNumber(number) {
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      if (playerBoard[r][c] === number) {
+        marked[r][c] = true;
+      }
+    }
+  }
+}
+
+function renderBoard() {
+  boardDiv.innerHTML = "";
+  for (let r = 0; r < 5; r++) {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "board-row";
+
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement("div");
+      cell.className = "board-cell";
+      const val = playerBoard[r][c];
+      cell.textContent = val === "FREE" ? "FREE" : val;
+      if (marked[r][c]) {
+        cell.classList.add("marked");
+      }
+      rowDiv.appendChild(cell);
+    }
+
+    boardDiv.appendChild(rowDiv);
+  }
+}
 

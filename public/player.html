@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Player - Habesha Bingo</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Habesha Bingo - Player Panel</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div id="playerPanel">
-  <h1>BINGO PLAYER</h1>
-  <div id="joinGameDiv">
-    <input type="text" id="playerName" placeholder="Enter your name" />
-    <input type="text" id="playerCode" placeholder="Enter your player code" maxlength="5" />
-    <button id="joinBtn">Join Game</button>
+  <div class="container">
+    <h1>Habesha Bingo - Player Panel</h1>
+    
+    <section id="join-section">
+      <p>Enter your name and the unique code given by the host.</p>
+      <input type="text" id="player-name" placeholder="Your Name" autocomplete="off" />
+      <input type="text" id="player-code" placeholder="Player Code" maxlength="6" autocomplete="off" />
+      <button id="join-btn" class="btn primary-btn">Join Game</button>
+    </section>
+    
+    <section id="game-section" style="display:none;">
+      <h2>Your Bingo Board</h2>
+      <div id="board" class="board"></div>
+      <button id="bingo-btn" class="btn bingo-btn" disabled>Call BINGO!</button>
+      <div id="winner-banner" class="winner-banner" style="display:none;"></div>
+    </section>
   </div>
 
-  <div id="gameBoardDiv" style="display:none;">
-    <h2>Game Code: <span id="gameCodeDisplay"></span></h2>
-    <div id="bingoBoard"></div>
-    <button id="bingoBtn" disabled>Declare Bingo!</button>
-    <div id="calledBalls"></div>
-    <div id="winnerBanner" style="display:none; color:lime; font-size:2em; font-weight:bold; margin-top:10px;"></div>
-  </div>
-</div>
-<script src="/socket.io/socket.io.js"></script>
-<script src="player.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="player.js"></script>
 </body>
 </html>
