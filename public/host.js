@@ -1,69 +1,60 @@
 const socket = io();
 
-let gameCode = null;
-let playerCodes = [];
-let calledNumbers = [];
+const loginBtn = document.getElementById('login-btn');
+const passwordInput = document.getElementById('host-password');
+const loginError = document.getElementById('login-error');
 
-const codesList = document.getElementById("codes-list");
-const calledNumbersDiv = document.getElementById("called-numbers");
-const startBtn = document.getElementById("start-game-btn");
-const winnerBanner = document.getElementById("winner-banner");
+const loginSection = document.getElementById('login-section');
+const dashboard = document.getElementById('dashboard');
+const codesList = document.getElementById('codes-list');
+const startGameBtn = document.getElementById('start-game-btn');
+const calledNumbersDiv = document.getElementById('called-numbers');
+const winnerBanner = document.getElementById('winner-banner');
 
-startBtn.disabled = true;
-winnerBanner.style.display = "none";
-
-document.getElementById("create-game-btn").onclick = () => {
-  socket.emit("host-create-game");
-};
-
-socket.on("game-created", ({ gameCode: code, playerCodes: codes }) => {
-  gameCode = code;
-  playerCodes = codes;
-  codesList.innerHTML = "";
-
-  codes.forEach((code) => {
-    const li = document.createElement("li");
-    li.textContent = code;
-    codesList.appendChild(li);
-  });
-
-  startBtn.disabled = false;
-  alert(`Game created! Game Code: ${gameCode}`);
+loginBtn.addEventListener('click', () => {
+    socket.emit('host-login', passwordInput.value);
 });
 
-startBtn.onclick = () => {
-  if (!gameCode) return;
-  socket.emit("host-start-calling", gameCode);
-  startBtn.disabled = true;
-  winnerBanner.style.display = "none";
-  calledNumbers = [];
-  calledNumbersDiv.innerHTML = "";
-};
+socket.on('host-login-success', (codes, calledNumbers) => {
+    loginSection.style.display = 'none';
+    dashboard.style.display = 'block';
+    loginError.style.display = 'none';
+    codesList.innerHTML = '';
+    codes.forEach(code => {
+        const li = document.createElement('li');
+        li.textContent = code;
+        codesList.appendChild(li);
+    });
 
-socket.on("number-called", (number) => {
-  calledNumbers.push(number);
-  const span = document.createElement("span");
-  span.textContent = number;
-  span.className = "called-number";
-  calledNumbersDiv.appendChild(span);
-
-  // TODO: Add voice announcement here (optional)
+    // Show already called numbers if any
+    calledNumbers.forEach(num => {
+        const span = document.createElement('span');
+        span.className = 'called-number';
+        span.textContent = num;
+        calledNumbersDiv.appendChild(span);
+    });
 });
 
-socket.on("player-joined", ({ playerName, playerCode }) => {
-  const p = document.createElement("p");
-  p.textContent = `Player joined: ${playerName} (${playerCode})`;
-  codesList.appendChild(p);
+socket.on('host-login-failed', () => {
+    loginError.style.display = 'block';
 });
 
-socket.on("bingo-winner", (winnerName) => {
-  winnerBanner.style.display = "block";
-  winnerBanner.textContent = `🎉 Bingo Winner: ${winnerName}`;
-  startBtn.disabled = false;
+// Start game
+startGameBtn.addEventListener('click', () => {
+    socket.emit('start-game');
 });
 
-socket.on("game-ended", () => {
-  alert("Game ended as host disconnected or numbers finished.");
-  window.location.reload();
+// Receive called number
+socket.on('number-called', num => {
+    const span = document.createElement('span');
+    span.className = 'called-number';
+    span.textContent = num;
+    calledNumbersDiv.appendChild(span);
+});
+
+// Winner
+socket.on('winner', name => {
+    winnerBanner.style.display = 'block';
+    winnerBanner.textContent = `🎉 Winner: ${name} 🎉`;
 });
 

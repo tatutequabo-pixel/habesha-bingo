@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Habesha Bingo - Host Panel</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Habesha Bingo - Host</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
+<div class="container">
     <h1>Habesha Bingo - Host Panel</h1>
-    <button id="create-game-btn" class="btn primary-btn">Create New Game</button>
-    
-    <section id="game-info" style="display:none;">
-      <h2>Game Code: <span id="game-code-display"></span></h2>
-      
-      <h3>Player Codes (Share these)</h3>
-      <ul id="codes-list" class="codes-list"></ul>
-      
-      <button id="start-game-btn" class="btn start-btn" disabled>Start Auto Calling Numbers</button>
-      
-      <h3>Called Numbers</h3>
-      <div id="called-numbers" class="called-numbers"></div>
 
-      <div id="winner-banner" class="winner-banner" style="display:none;"></div>
-    </section>
-  </div>
+    <div id="login-section">
+        <input type="password" id="host-password" placeholder="Enter Host Password" />
+        <button class="btn primary-btn" id="login-btn">Login</button>
+        <p id="login-error" style="color:red; display:none;">Wrong Password</p>
+    </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="host.js"></script>
+    <div id="dashboard" style="display:none;">
+        <h2>Player Codes</h2>
+        <ul id="codes-list" class="codes-list"></ul>
+
+        <button class="btn start-btn" id="start-game-btn">Start Game</button>
+
+        <h3>Called Numbers</h3>
+        <div id="called-numbers" class="called-numbers"></div>
+
+        <div id="winner-banner" class="winner-banner" style="display:none;"></div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="host.js"></script>
 </body>
 </html>

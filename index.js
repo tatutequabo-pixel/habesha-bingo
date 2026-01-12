@@ -1,223 +1,141 @@
-const express = require("express");
-const http = require("http");
-const path = require("path");
-const { Server } = require("socket.io");
-
+const express = require('express');
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static('public'));
 
-let games = {};
+// --- Game State ---
+let game = {
+    hostPassword: 'Hanilove1',
+    playerCodes: [],       // 30 unique codes
+    players: {},           // { code: { name, socketId, board, markedNumbers: [] } }
+    calledNumbers: [],
+    gameStarted: false,
+    winner: null
+};
 
-function generateUniqueCodes() {
-  const codes = new Set();
-  while (codes.size < 30) {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    codes.add(code);
-  }
-  return Array.from(codes);
-}
-
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
+// --- Helper functions ---
+function generateUniqueCodes(count = 30) {
+    const codes = new Set();
+    while(codes.size < count){
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        codes.add(code);
+    }
+    return Array.from(codes);
 }
 
 function generateBingoBoard() {
-  const board = [];
-  const ranges = {
-    B: [1, 15],
-    I: [16, 30],
-    N: [31, 45],
-    G: [46, 60],
-    O: [61, 75],
-  };
-
-  for (let column in ranges) {
-    let [start, end] = ranges[column];
-    let numbers = [];
-    for (let i = start; i <= end; i++) numbers.push(i);
-    shuffleArray(numbers);
-    board.push(numbers.slice(0, 5));
-  }
-
-  // Convert column-wise to row-wise
-  let finalBoard = [];
-  for (let i = 0; i < 5; i++) {
-    finalBoard[i] = [];
-    for (let j = 0; j < 5; j++) {
-      finalBoard[i][j] = board[j][i];
+    const board = [];
+    while(board.length < 25){
+        const num = Math.floor(Math.random() * 75) + 1;
+        if(!board.includes(num)) board.push(num);
     }
-  }
-  finalBoard[2][2] = "FREE"; // center free space
-  return finalBoard;
+    // Free space in center
+    board[12] = 'FREE';
+    return board;
 }
 
-function checkBingo(board, marked) {
-  // board: 5x5, marked: 5x5 boolean
-  // Check rows, cols, diagonals
-
-  for (let i = 0; i < 5; i++) {
-    // Check row
-    if (marked[i].every(Boolean)) return true;
-    // Check col
-    if ([0,1,2,3,4].every(j => marked[j][i])) return true;
-  }
-  // Diagonal top-left to bottom-right
-  if ([0,1,2,3,4].every(i => marked[i][i])) return true;
-  // Diagonal top-right to bottom-left
-  if ([0,1,2,3,4].every(i => marked[i][4 - i])) return true;
-
-  return false;
+function callNextNumber() {
+    if(game.calledNumbers.length >= 75) return null;
+    let num;
+    do {
+        num = Math.floor(Math.random() * 75) + 1;
+    } while(game.calledNumbers.includes(num));
+    game.calledNumbers.push(num);
+    io.emit('number-called', num);
+    return num;
 }
 
-io.on("connection", (socket) => {
-  console.log("User connected: " + socket.id);
+function checkBingo(board, markedNumbers){
+    const winPatterns = [
+        [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24], // rows
+        [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24], // cols
+        [0,6,12,18,24],[4,8,12,16,20] // diagonals
+    ];
+    return winPatterns.some(pattern =>
+        pattern.every(idx => board[idx]==='FREE' || markedNumbers.includes(board[idx]))
+    );
+}
 
-  // Host creates a game
-  socket.on("host-create-game", () => {
-    const gameCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const playerCodes = generateUniqueCodes();
-    const numberPool = Array.from({ length: 75 }, (_, i) => i + 1);
-    shuffleArray(numberPool);
+// --- Socket.IO ---
+io.on('connection', socket => {
+    console.log('New connection:', socket.id);
 
-    games[gameCode] = {
-      hostId: socket.id,
-      playerCodes,
-      numberPool,
-      currentCallIndex: 0,
-      players: {}, // socket.id -> { playerName, playerCode, board, marked }
-      autoCaller: null,
-      winner: null,
-    };
-
-    socket.join(gameCode);
-    socket.emit("game-created", { gameCode, playerCodes });
-    console.log(`Game created: ${gameCode} by host ${socket.id}`);
-  });
-
-  // Player joins game
-  socket.on("player-join-game", ({ gameCode, playerCode, playerName }) => {
-    const game = games[gameCode];
-    if (!game) {
-      socket.emit("join-error", "Game not found.");
-      return;
-    }
-    if (!game.playerCodes.includes(playerCode)) {
-      socket.emit("join-error", "Invalid player code.");
-      return;
-    }
-    // Check if playerCode already taken
-    for (const p of Object.values(game.players)) {
-      if (p.playerCode === playerCode) {
-        socket.emit("join-error", "Player code already used.");
-        return;
-      }
-    }
-
-    const board = generateBingoBoard();
-    // marked array parallel to board for called numbers
-    let marked = Array(5)
-      .fill(0)
-      .map(() => Array(5).fill(false));
-    // Mark center free space automatically
-    marked[2][2] = true;
-
-    game.players[socket.id] = { playerName, playerCode, board, marked };
-    socket.join(gameCode);
-    socket.emit("board-assigned", board);
-    io.to(game.hostId).emit("player-joined", { playerName, playerCode });
-    console.log(`Player ${playerName} joined game ${gameCode}`);
-  });
-
-  // Host starts auto calling
-  socket.on("host-start-calling", (gameCode) => {
-    const game = games[gameCode];
-    if (!game) return;
-
-    if (game.autoCaller) clearInterval(game.autoCaller);
-    game.currentCallIndex = 0;
-    game.winner = null;
-
-    game.autoCaller = setInterval(() => {
-      if (game.currentCallIndex < game.numberPool.length) {
-        const calledNumber = game.numberPool[game.currentCallIndex];
-        game.currentCallIndex++;
-
-        io.in(gameCode).emit("number-called", calledNumber);
-
-        // Update marked for all players who have the number on their boards
-        for (const [playerSocketId, player] of Object.entries(game.players)) {
-          for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 5; c++) {
-              if (player.board[r][c] === calledNumber) {
-                player.marked[r][c] = true;
-              }
-            }
-          }
+    // Host login
+    socket.on('host-login', password => {
+        if(password === game.hostPassword){
+            // Generate 30 codes only if first login
+            if(game.playerCodes.length === 0) game.playerCodes = generateUniqueCodes(30);
+            socket.emit('host-login-success', game.playerCodes, game.calledNumbers);
+        } else {
+            socket.emit('host-login-failed');
         }
-      } else {
-        clearInterval(game.autoCaller);
-        io.in(gameCode).emit("game-ended");
-      }
-    }, 5000);
+    });
 
-    console.log(`Started auto calling in game ${gameCode}`);
-  });
+    // Start game
+    socket.on('start-game', () => {
+        if(!game.gameStarted){
+            game.gameStarted = true;
+            game.calledNumbers = [];
+            io.emit('game-started');
+            // Start auto-calling numbers every 5s
+            const interval = setInterval(() => {
+                if(game.winner) {
+                    clearInterval(interval);
+                    return;
+                }
+                callNextNumber();
+            }, 5000);
+        }
+    });
 
-  // Player calls bingo
-  socket.on("player-bingo", (gameCode) => {
-    const game = games[gameCode];
-    if (!game || game.winner) return; // ignore if game ended or winner already
+    // Player join
+    socket.on('player-join', ({name, code}) => {
+        if(game.playerCodes.includes(code)){
+            const board = generateBingoBoard();
+            game.players[code] = { name, socketId: socket.id, board, markedNumbers: [] };
+            socket.emit('player-join-success', board, game.calledNumbers, game.gameStarted);
+        } else {
+            socket.emit('player-join-failed');
+        }
+    });
 
-    const player = game.players[socket.id];
-    if (!player) return;
+    // Player marks number
+    socket.on('mark-number', ({code, number}) => {
+        const player = game.players[code];
+        if(player && !player.markedNumbers.includes(number)){
+            player.markedNumbers.push(number);
+        }
+    });
 
-    // Check bingo validity
-    if (checkBingo(player.board, player.marked)) {
-      game.winner = player.playerName;
-      io.in(gameCode).emit("bingo-winner", player.playerName);
-      clearInterval(game.autoCaller);
-      console.log(`Bingo! Winner: ${player.playerName} in game ${gameCode}`);
-    } else {
-      socket.emit("bingo-invalid", "No Bingo found on your board.");
-    }
-  });
+    // Player calls BINGO
+    socket.on('bingo', code => {
+        const player = game.players[code];
+        if(player && !game.winner){
+            if(checkBingo(player.board, player.markedNumbers)){
+                game.winner = player.name;
+                io.emit('winner', player.name);
+            }
+        }
+    });
 
-  // Handle disconnection
-  socket.on("disconnect", () => {
-    console.log("User disconnected: " + socket.id);
-
-    // Remove player from games
-    for (const [gameCode, game] of Object.entries(games)) {
-      if (socket.id === game.hostId) {
-        // End game if host disconnected
-        io.in(gameCode).emit("game-ended");
-        clearInterval(game.autoCaller);
-        delete games[gameCode];
-        console.log(`Game ${gameCode} ended because host disconnected`);
-        break;
-      }
-      if (game.players[socket.id]) {
-        const playerName = game.players[socket.id].playerName;
-        delete game.players[socket.id];
-        io.to(game.hostId).emit("player-left", playerName);
-        break;
-      }
-    }
-  });
+    // Disconnect
+    socket.on('disconnect', () => {
+        console.log('Disconnected:', socket.id);
+        // Remove player if any
+        for(const code in game.players){
+            if(game.players[code].socketId === socket.id){
+                delete game.players[code];
+                break;
+            }
+        }
+    });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
+http.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 
