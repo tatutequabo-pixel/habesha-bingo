@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Host Panel - Habesha Bingo</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <h1 class="casino-title">Host Panel</h1>
+
+  <div id="loginDiv">
+    <input type="password" id="hostPassword" placeholder="Enter Host Password">
+    <button class="big-btn" onclick="loginHost()">Login</button>
+    <p id="loginError" style="color:red;"></p>
+  </div>
+
+  <div id="hostControls" style="display:none;">
+    <p>Room Code: <span id="roomCode">---</span></p>
+    <button class="big-btn" onclick="startGame()">Start Game</button>
+    <div id="calledNumbers"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/host.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+/* Host panel styling */
+#hostControls {
+  margin-top: 20px;
+}
+
+#calledNumbers p {
+  margin: 5px 0;
+  font-weight: bold;
+}

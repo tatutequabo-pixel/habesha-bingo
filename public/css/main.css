@@ -1,0 +1,34 @@
+body {
+  font-family: 'Press Start 2P', cursive;
+  background: #0b0b0b;
+  color: #fff;
+  text-align: center;
+}
+
+.casino-title {
+  font-size: 2rem;
+  color: #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+  animation: glow 1s infinite alternate;
+}
+
+.big-btn {
+  background: #222;
+  color: #0f0;
+  font-family: 'Press Start 2P', cursive;
+  border: 2px solid #0f0;
+  padding: 20px 50px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.big-btn:hover {
+  background: #0f0;
+  color: #000;
+}
+
+@keyframes glow {
+  0% { text-shadow: 0 0 5px #0f0; }
+  100% { text-shadow: 0 0 20px #0f0; }
+}

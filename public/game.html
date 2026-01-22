@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play Bingo - Habesha Bingo</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <h1 class="casino-title">Player Panel</h1>
+
+  <div id="joinDiv">
+    <input type="text" id="playerName" placeholder="Your Name">
+    <input type="text" id="roomCode" placeholder="Room Code">
+    <input type="text" id="playerCode" placeholder="Player Code">
+    <button class="big-btn" onclick="joinRoom()">Join Game</button>
+    <p id="joinError" style="color:red;"></p>
+  </div>
+
+  <div id="gameBoardDiv" style="display:none;">
+    <h2 id="playerDisplay"></h2>
+    <div id="board" style="display:grid;grid-template-columns:repeat(5,60px);gap:5px;"></div>
+    <button class="big-btn" onclick="callBingo()">BINGO!</button>
+    <div id="calledNumbers"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

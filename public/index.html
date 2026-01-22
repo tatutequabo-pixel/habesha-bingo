@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habesha Bingo</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="landing-container">
+    <h1 class="casino-title">🎲 Habesha Bingo 🎲</h1>
+
+    <div class="button-group">
+      <button class="big-btn" onclick="navigate('admin.html')">Admin Panel</button>
+      <button class="big-btn" onclick="navigate('host.html')">Host Panel</button>
+      <button class="big-btn" onclick="navigate('game.html')">Play Bingo</button>
+    </div>
+  </div>
+
+  <script>
+    function navigate(url) {
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>

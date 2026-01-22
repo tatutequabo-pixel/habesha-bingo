@@ -1,0 +1,11 @@
+/* Admin panel styling */
+#roomsList {
+  margin-top: 20px;
+  color: #0f0;
+}
+
+#roomsList p {
+  padding: 5px;
+  border: 1px solid #0f0;
+  margin-bottom: 5px;
+}
