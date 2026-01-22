@@ -11,20 +11,17 @@ const io = new Server(server);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ===== HOST ENDPOINTS =====
+// HOST ENDPOINTS
 
-// Create new room + generate 100 player codes
 app.post('/create-room', (req, res) => {
-  const hostId = Date.now(); // can also use socket.id if socket-based
+  const hostId = Date.now();
   const room = createRoom(hostId);
-
   res.json({
     roomCode: room.roomCode,
     playerCodes: room.playerCodes
   });
 });
 
-// Start game: auto call numbers
 app.post('/start-game', (req, res) => {
   const { roomCode } = req.body;
   const room = getRoom(roomCode);
@@ -34,9 +31,8 @@ app.post('/start-game', (req, res) => {
   res.send('Game started');
 });
 
-// ===== PLAYER ENDPOINT =====
+// PLAYER ENDPOINT
 
-// Player joins room with name + room code + player code
 app.post('/join-room', (req, res) => {
   const { name, roomCode, playerCode } = req.body;
   const room = getRoom(roomCode);
@@ -46,39 +42,31 @@ app.post('/join-room', (req, res) => {
     return res.status(400).send({ error: 'Invalid player code' });
   }
 
-  // Add player to room
   room.players[playerCode] = { name, socketId: null };
-
-  res.send({ success: true, message: 'Joined room', roomCode });
+  res.send({ success: true });
 });
 
-// ===== SOCKET.IO =====
+// SOCKET.IO
 
 io.on('connection', (socket) => {
-  console.log('New socket connection:', socket.id);
+  console.log('New connection:', socket.id);
 
-  // Player sets their socket id
   socket.on('register-player', ({ roomCode, playerCode }) => {
     const room = getRoom(roomCode);
     if (!room) return;
-
     if (room.players[playerCode]) {
       room.players[playerCode].socketId = socket.id;
-
-      // Send current board state if needed
-      socket.emit('board-init', room.playerBoards[playerCode] || null);
     }
   });
 
-  // Player marks a number
   socket.on('mark-number', ({ roomCode, playerCode, number }) => {
     const room = getRoom(roomCode);
-    if (!room) return;
-    const playerBoard = room.playerBoards[playerCode];
+    if (!room || !room.gameStarted) return;
 
+    const playerBoard = room.playerBoards[playerCode];
     if (!playerBoard) return;
 
-    // Mark the number
+    // Mark number
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 5; j++) {
         if (playerBoard.board[i][j] === number) {
@@ -87,26 +75,21 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Check for Bingo
-    const isBingo = playerBoard.marked.some((row, i) =>
-      row.every(v => v)
-    ) || [0,1,2,3,4].every(i => playerBoard.marked[i][i]) // main diagonal
-      || [0,1,2,3,4].every(i => playerBoard.marked[i][4-i]); // anti-diagonal
+    // Check Bingo
+    const isBingo = playerBoard.marked.some(row => row.every(v => v))
+      || [0,1,2,3,4].every(i => playerBoard.marked[i][i])
+      || [0,1,2,3,4].every(i => playerBoard.marked[i][4-i]);
 
     if (isBingo) {
-      io.to(roomCode).emit('bingo', { playerCode, name: room.players[playerCode].name });
+      io.emit('bingo', { playerCode, name: room.players[playerCode].name });
       room.gameStarted = false;
       clearInterval(room.numberInterval);
     }
   });
 
-  socket.on('disconnect', () => {
-    console.log('Socket disconnected:', socket.id);
-  });
+  socket.on('disconnect', () => console.log('Disconnected:', socket.id));
 });
 
-// ===== START SERVER =====
+// START SERVER
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

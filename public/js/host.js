@@ -1,40 +1,68 @@
-const loginBtn = document.getElementById('loginBtn');
+// Host panel JS
+// Make sure host.html includes:
+// <script src="js/host.js" type="module"></script>
+
 const hostPasswordInput = document.getElementById('hostPassword');
+const loginBtn = document.getElementById('loginBtn');
 const roomInfoDiv = document.getElementById('roomInfo');
 const playerCodesDiv = document.getElementById('playerCodes');
 const startBtn = document.getElementById('startGame');
 
 let currentRoom = null;
 
+// LOGIN BUTTON
 loginBtn.addEventListener('click', async () => {
-  if (hostPasswordInput.value !== 'Greenday1') {
+  const password = hostPasswordInput.value.trim();
+  if (password !== 'Greenday1') {
     alert('Wrong password!');
     return;
   }
 
-  const res = await fetch('/create-room', { method: 'POST' });
-  currentRoom = await res.json();
+  try {
+    // Create a new room via backend
+    const res = await fetch('/create-room', { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to create room');
 
-  roomInfoDiv.innerHTML = `<h2>Room Code: ${currentRoom.roomCode}</h2>`;
-  playerCodesDiv.innerHTML = '';
+    currentRoom = await res.json();
 
-  currentRoom.playerCodes.forEach(code => {
-    const p = document.createElement('p');
-    p.innerText = code;
-    playerCodesDiv.appendChild(p);
-  });
+    // Show room code
+    roomInfoDiv.innerHTML = `<h2>Room Code: ${currentRoom.roomCode}</h2>`;
 
-  startBtn.style.display = 'inline-block';
+    // Show 100 player codes
+    playerCodesDiv.innerHTML = '';
+    currentRoom.playerCodes.forEach(code => {
+      const p = document.createElement('p');
+      p.innerText = code;
+      playerCodesDiv.appendChild(p);
+    });
+
+    // Show start button
+    startBtn.style.display = 'inline-block';
+  } catch (err) {
+    console.error(err);
+    alert('Error creating room. Check server.');
+  }
 });
 
+// START GAME BUTTON
 startBtn.addEventListener('click', async () => {
-  if (!currentRoom) return;
+  if (!currentRoom) {
+    alert('No room created yet!');
+    return;
+  }
 
-  await fetch('/start-game', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roomCode: currentRoom.roomCode })
-  });
+  try {
+    const res = await fetch('/start-game', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomCode: currentRoom.roomCode })
+    });
 
-  alert('Game started! Numbers will auto-call every 15 seconds.');
+    if (!res.ok) throw new Error('Failed to start game');
+
+    alert('Game started! Numbers will auto-call every 15 seconds.');
+  } catch (err) {
+    console.error(err);
+    alert('Error starting game. Check server.');
+  }
 });
