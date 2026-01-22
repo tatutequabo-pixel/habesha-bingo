@@ -1,5 +1,3 @@
-const { v4: uuidv4 } = require("uuid");
-
 class Room {
   constructor(hostId) {
     this.hostId = hostId;
@@ -9,157 +7,70 @@ class Room {
     this.calledNumbers = []; // numbers called in game
     this.gameStarted = false;
     this.numberInterval = null;
+
+    // Generate 100 unique player codes for this room
+    this.playerCodes = this.generatePlayerCodes(100);
   }
 
-  // Generate 6-digit unique room code
+  // Generate room code (4-6 char)
   generateRoomCode() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return Math.random().toString(36).substring(2, 6).toUpperCase();
   }
 
-  // Player joins the room
-  joinRoom(name, playerCode, socketId) {
-    if (this.players[playerCode]) return false;
-
-    this.players[playerCode] = { name, socketId };
-    this.playerBoards[playerCode] = {
-      board: this.generateBoard(),
-      marked: Array.from({ length: 5 }, () => Array(5).fill(false))
-    };
-    return this;
-  }
-
-  // Get player names
-  getPlayerNames() {
-    return Object.values(this.players).map(p => p.name);
-  }
-
-  // Generate 5x5 board with unique numbers (1-75)
-  generateBoard() {
-    const nums = [];
-    while (nums.length < 25) {
-      const n = Math.floor(Math.random() * 75) + 1;
-      if (!nums.includes(n)) nums.push(n);
+  // Generate N unique player codes
+  generatePlayerCodes(count) {
+    const codes = new Set();
+    while (codes.size < count) {
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase(); // 6-char code
+      codes.add(code);
     }
-    // Create 5x5 matrix
-    const board = [];
-    for (let i = 0; i < 5; i++) {
-      board.push(nums.slice(i * 5, i * 5 + 5));
-    }
-    return board;
+    return Array.from(codes);
   }
 
-  // Start auto-calling numbers every 15 seconds
+  // Reset player codes for a new game
+  resetPlayerCodes() {
+    this.playerCodes = this.generatePlayerCodes(100);
+    this.players = {};
+    this.playerBoards = {};
+    this.calledNumbers = [];
+    this.gameStarted = false;
+    clearInterval(this.numberInterval);
+  }
+
+  // Start auto-calling numbers
   startGame(io) {
     if (this.gameStarted) return;
     this.gameStarted = true;
-
+    const numbers = Array.from({ length: 75 }, (_, i) => i + 1);
+    let idx = 0;
     this.numberInterval = setInterval(() => {
-      if (this.calledNumbers.length >= 75) return this.stopGame(); // all numbers called
-
-      let num;
-      do {
-        num = Math.floor(Math.random() * 75) + 1;
-      } while (this.calledNumbers.includes(num));
-
+      if (idx >= numbers.length) {
+        clearInterval(this.numberInterval);
+        return;
+      }
+      const num = numbers[idx++];
       this.calledNumbers.push(num);
-      io.to(this.roomCode).emit("numberCalled", num);
-    }, 15000);
+      io.to(this.roomCode).emit('number-called', num);
+    }, 15000); // every 15 seconds
   }
 
-  // Stop game
-  stopGame() {
-    clearInterval(this.numberInterval);
-    this.gameStarted = false;
-  }
-
-  // Mark number for player
-  markNumber(playerCode, number) {
-    const boardData = this.playerBoards[playerCode];
-    if (!boardData) return;
-
-    for (let i = 0; i < 5; i++) {
-      for (let j = 0; j < 5; j++) {
-        if (boardData.board[i][j] === number) {
-          boardData.marked[i][j] = true;
-        }
-      }
-    }
-  }
-
-  // Check if player has Bingo
-  checkBingo(playerCode) {
-    const boardData = this.playerBoards[playerCode];
-    if (!boardData) return false;
-
-    const marked = boardData.marked;
-
-    // Check rows
-    for (let i = 0; i < 5; i++) {
-      if (marked[i].every(v => v)) return true;
-    }
-
-    // Check columns
-    for (let j = 0; j < 5; j++) {
-      let col = true;
-      for (let i = 0; i < 5; i++) {
-        if (!marked[i][j]) col = false;
-      }
-      if (col) return true;
-    }
-
-    // Check main diagonal
-    if ([0,1,2,3,4].every(i => marked[i][i])) return true;
-
-    // Check anti-diagonal
-    if ([0,1,2,3,4].every(i => marked[i][4-i])) return true;
-
-    return false;
-  }
-
-  // Mark a number for all players automatically if called
-  markCalledNumber(number) {
-    for (const playerCode in this.playerBoards) {
-      this.markNumber(playerCode, number);
-    }
+  // Validate player code
+  validatePlayerCode(code) {
+    return this.playerCodes.includes(code);
   }
 }
 
-class RoomManager {
-  constructor() {
-    this.rooms = {};
-  }
+// Rooms manager
+const rooms = {};
 
-  // Create new room
-  createRoom(hostId) {
-    const room = new Room(hostId);
-    this.rooms[room.roomCode] = room;
-    return room;
-  }
-
-  // Get existing room
-  getRoom(roomCode) {
-    return this.rooms[roomCode];
-  }
-
-  // Player joins a room
-  joinRoom(roomCode, name, playerCode, socketId) {
-    const room = this.getRoom(roomCode);
-    if (!room) return false;
-    return room.joinRoom(name, playerCode, socketId);
-  }
-
-  // Handle socket disconnect
-  leaveSocket(socketId) {
-    for (const code in this.rooms) {
-      const room = this.rooms[code];
-      for (const playerCode in room.players) {
-        if (room.players[playerCode].socketId === socketId) {
-          delete room.players[playerCode];
-          delete room.playerBoards[playerCode];
-        }
-      }
-    }
-  }
+function createRoom(hostId) {
+  const room = new Room(hostId);
+  rooms[room.roomCode] = room;
+  return room;
 }
 
-module.exports = { RoomManager };
+function getRoom(roomCode) {
+  return rooms[roomCode];
+}
+
+module.exports = { createRoom, getRoom, Room };

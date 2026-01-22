@@ -1,59 +1,112 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const { RoomManager } = require("./roomManager");
+const express = require('express');
+const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
+const { createRoom, getRoom } = require('./roomManager');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const roomManager = new RoomManager();
 
-app.use(express.static("public"));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
-io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
+// ===== HOST ENDPOINTS =====
 
-  // Player joins room
-  socket.on("joinRoom", ({ roomCode, playerName, playerCode }) => {
-    const room = roomManager.joinRoom(roomCode, playerName, playerCode, socket.id);
-    if (room) {
-      socket.join(roomCode);
-      io.to(socket.id).emit("joined", room.playerBoards[playerCode]);
-      io.to(roomCode).emit("updatePlayers", room.getPlayerNames());
-    } else {
-      io.to(socket.id).emit("errorMsg", "Invalid room code or player code.");
-    }
-  });
+// Create new room + generate 100 player codes
+app.post('/create-room', (req, res) => {
+  const hostId = Date.now(); // can also use socket.id if socket-based
+  const room = createRoom(hostId);
 
-  // Host starts game
-  socket.on("startGame", ({ roomCode }) => {
-    const room = roomManager.getRoom(roomCode);
-    if (room && !room.gameStarted) {
-      room.startGame(io);
-    }
-  });
-
-  // Player calls BINGO
-  socket.on("callBingo", ({ roomCode, playerCode }) => {
-    const room = roomManager.getRoom(roomCode);
-    if (room && room.gameStarted) {
-      const win = room.checkBingo(playerCode);
-      if (win) {
-        io.to(roomCode).emit("bingoWinner", { player: room.players[playerCode].name });
-        room.stopGame();
-      } else {
-        io.to(socket.id).emit("errorMsg", "Not a valid Bingo!");
-      }
-    }
-  });
-
-  socket.on("disconnect", () => {
-    roomManager.leaveSocket(socket.id);
-    console.log("Client disconnected:", socket.id);
+  res.json({
+    roomCode: room.roomCode,
+    playerCodes: room.playerCodes
   });
 });
 
+// Start game: auto call numbers
+app.post('/start-game', (req, res) => {
+  const { roomCode } = req.body;
+  const room = getRoom(roomCode);
+  if (!room) return res.status(404).send('Room not found');
+
+  room.startGame(io);
+  res.send('Game started');
+});
+
+// ===== PLAYER ENDPOINT =====
+
+// Player joins room with name + room code + player code
+app.post('/join-room', (req, res) => {
+  const { name, roomCode, playerCode } = req.body;
+  const room = getRoom(roomCode);
+  if (!room) return res.status(404).send({ error: 'Room not found' });
+
+  if (!room.validatePlayerCode(playerCode)) {
+    return res.status(400).send({ error: 'Invalid player code' });
+  }
+
+  // Add player to room
+  room.players[playerCode] = { name, socketId: null };
+
+  res.send({ success: true, message: 'Joined room', roomCode });
+});
+
+// ===== SOCKET.IO =====
+
+io.on('connection', (socket) => {
+  console.log('New socket connection:', socket.id);
+
+  // Player sets their socket id
+  socket.on('register-player', ({ roomCode, playerCode }) => {
+    const room = getRoom(roomCode);
+    if (!room) return;
+
+    if (room.players[playerCode]) {
+      room.players[playerCode].socketId = socket.id;
+
+      // Send current board state if needed
+      socket.emit('board-init', room.playerBoards[playerCode] || null);
+    }
+  });
+
+  // Player marks a number
+  socket.on('mark-number', ({ roomCode, playerCode, number }) => {
+    const room = getRoom(roomCode);
+    if (!room) return;
+    const playerBoard = room.playerBoards[playerCode];
+
+    if (!playerBoard) return;
+
+    // Mark the number
+    for (let i = 0; i < 5; i++) {
+      for (let j = 0; j < 5; j++) {
+        if (playerBoard.board[i][j] === number) {
+          playerBoard.marked[i][j] = true;
+        }
+      }
+    }
+
+    // Check for Bingo
+    const isBingo = playerBoard.marked.some((row, i) =>
+      row.every(v => v)
+    ) || [0,1,2,3,4].every(i => playerBoard.marked[i][i]) // main diagonal
+      || [0,1,2,3,4].every(i => playerBoard.marked[i][4-i]); // anti-diagonal
+
+    if (isBingo) {
+      io.to(roomCode).emit('bingo', { playerCode, name: room.players[playerCode].name });
+      room.gameStarted = false;
+      clearInterval(room.numberInterval);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Socket disconnected:', socket.id);
+  });
+});
+
+// ===== START SERVER =====
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+  console.log(`Server running on port ${PORT}`);
 });

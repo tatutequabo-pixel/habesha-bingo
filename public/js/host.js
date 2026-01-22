@@ -1,29 +1,40 @@
-const socket = io();
+const loginBtn = document.getElementById('loginBtn');
+const hostPasswordInput = document.getElementById('hostPassword');
+const roomInfoDiv = document.getElementById('roomInfo');
+const playerCodesDiv = document.getElementById('playerCodes');
+const startBtn = document.getElementById('startGame');
 
-const HOST_PASSWORD = "Greenday1";
-let roomCode = "";
+let currentRoom = null;
 
-function loginHost() {
-  const pass = document.getElementById("hostPassword").value;
-  if (pass === HOST_PASSWORD) {
-    document.getElementById("loginDiv").style.display = "none";
-    document.getElementById("hostControls").style.display = "block";
-    roomCode = Math.floor(100000 + Math.random() * 900000).toString();
-    document.getElementById("roomCode").innerText = roomCode;
-    console.log("Room created:", roomCode);
-  } else {
-    document.getElementById("loginError").innerText = "Incorrect Password!";
+loginBtn.addEventListener('click', async () => {
+  if (hostPasswordInput.value !== 'Greenday1') {
+    alert('Wrong password!');
+    return;
   }
-}
 
-function startGame() {
-  socket.emit("startGame", { roomCode });
-  alert("Game started! Numbers will auto-call every 15 seconds.");
-}
+  const res = await fetch('/create-room', { method: 'POST' });
+  currentRoom = await res.json();
 
-socket.on("numberCalled", (num) => {
-  const div = document.getElementById("calledNumbers");
-  const p = document.createElement("p");
-  p.innerText = "Number Called: " + num;
-  div.appendChild(p);
+  roomInfoDiv.innerHTML = `<h2>Room Code: ${currentRoom.roomCode}</h2>`;
+  playerCodesDiv.innerHTML = '';
+
+  currentRoom.playerCodes.forEach(code => {
+    const p = document.createElement('p');
+    p.innerText = code;
+    playerCodesDiv.appendChild(p);
+  });
+
+  startBtn.style.display = 'inline-block';
+});
+
+startBtn.addEventListener('click', async () => {
+  if (!currentRoom) return;
+
+  await fetch('/start-game', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ roomCode: currentRoom.roomCode })
+  });
+
+  alert('Game started! Numbers will auto-call every 15 seconds.');
 });
