@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <title>Habesha Bingo - Player Panel</title>
-  <!-- CSS Links -->
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/game.css">
 </head>
 <body>
-  <h1>Habesha Bingo - Player Panel</h1>
+  <div class="player-container">
+    <h1>Player Panel</h1>
 
-  <input type="text" id="playerName" placeholder="Enter Name">
-  <input type="text" id="roomCode" placeholder="Enter Room Code">
-  <input type="text" id="playerCode" placeholder="Enter Player Code">
-  <button id="joinBtn">Join Game</button>
+    <input type="text" id="playerName" placeholder="Enter Name">
+    <input type="text" id="roomCode" placeholder="Enter Room Code">
+    <input type="text" id="playerCode" placeholder="Enter Player Code">
+    <button id="joinBtn">Join Game</button>
 
-  <div id="bingoBoard"></div>
-  <button id="bingoBtn" style="display:none;">BINGO!</button>
+    <div id="bingoBoard" class="bingo-board"></div>
+    <button id="bingoBtn" style="display:none;">BINGO!</button>
 
-  <div id="calledNumbers"></div>
+    <div id="calledNumbers" class="called-numbers"></div>
+  </div>
 
   <script src="js/game.js"></script>
 </body>

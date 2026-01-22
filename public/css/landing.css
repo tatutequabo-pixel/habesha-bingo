@@ -1,31 +1,30 @@
-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  text-align: center;
-  background: url('../assets/pixel-background.png') no-repeat center center fixed;
-  background-size: cover;
+.landing-container {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  text-align:center;
 }
 
-h1 {
-  font-size: 48px;
-  color: #ffdd59;
-  text-shadow: 2px 2px 5px #000;
-  margin-bottom: 40px;
+.landing-container h1 {
+  font-size:48px;
+  color:#ffdd59;
+  text-shadow:2px 2px 5px #000;
+  margin-bottom:40px;
 }
 
-button {
-  font-size: 20px;
-  padding: 15px 30px;
-  background: #1e90ff;
-  color: #fff;
-  border-radius: 10px;
+.landing-container .buttons button {
+  font-size:20px;
+  padding:15px 30px;
+  margin:10px;
+  background:#1e90ff;
+  color:#fff;
+  border-radius:10px;
   transition: transform 0.2s ease;
 }
 
-button:hover {
+.landing-container .buttons button:hover {
   transform: scale(1.1);
-  background: #3742fa;
+  background:#3742fa;
 }

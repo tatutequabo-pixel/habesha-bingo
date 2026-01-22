@@ -1,13 +1,13 @@
 const rooms = {};
 
 function generateRoomCode() {
-  return Math.random().toString(36).substring(2, 7).toUpperCase();
+  return Math.random().toString(36).substring(2,7).toUpperCase();
 }
 
 function generatePlayerCodes() {
   const codes = new Set();
-  while (codes.size < 100) {
-    codes.add(Math.random().toString(36).substring(2, 6).toUpperCase());
+  while(codes.size < 100) {
+    codes.add(Math.random().toString(36).substring(2,6).toUpperCase());
   }
   return Array.from(codes);
 }

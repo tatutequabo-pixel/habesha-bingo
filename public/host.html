@@ -3,19 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>Habesha Bingo - Host Panel</title>
-  <!-- CSS Links -->
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/host.css">
 </head>
 <body>
-  <h1>Habesha Bingo Host Panel</h1>
+  <div class="host-container">
+    <h1>Host Panel</h1>
 
-  <input type="password" id="hostPassword" placeholder="Enter Password">
-  <button id="loginBtn">Login</button>
+    <div class="login-box">
+      <input type="password" id="hostPassword" placeholder="Enter Password">
+      <button id="loginBtn">Login</button>
+    </div>
 
-  <div id="roomInfo"></div>
-  <div id="playerCodes"></div>
-  <button id="startGame" style="display:none;">Start Game</button>
+    <div id="roomInfo" class="room-info"></div>
+    <div id="playerCodes" class="player-codes"></div>
+    <button id="startGame" class="start-btn" style="display:none;">Start Game</button>
+  </div>
 
   <script src="js/host.js"></script>
 </body>
