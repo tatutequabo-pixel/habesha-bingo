@@ -2,29 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Play Bingo - Habesha Bingo</title>
+  <title>Habesha Bingo - Player Panel</title>
+  <!-- CSS Links -->
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/game.css">
 </head>
 <body>
-  <h1 class="casino-title">Player Panel</h1>
+  <h1>Habesha Bingo - Player Panel</h1>
 
-  <div id="joinDiv">
-    <input type="text" id="playerName" placeholder="Your Name">
-    <input type="text" id="roomCode" placeholder="Room Code">
-    <input type="text" id="playerCode" placeholder="Player Code">
-    <button class="big-btn" onclick="joinRoom()">Join Game</button>
-    <p id="joinError" style="color:red;"></p>
-  </div>
+  <input type="text" id="playerName" placeholder="Enter Name">
+  <input type="text" id="roomCode" placeholder="Enter Room Code">
+  <input type="text" id="playerCode" placeholder="Enter Player Code">
+  <button id="joinBtn">Join Game</button>
 
-  <div id="gameBoardDiv" style="display:none;">
-    <h2 id="playerDisplay"></h2>
-    <div id="board" style="display:grid;grid-template-columns:repeat(5,60px);gap:5px;"></div>
-    <button class="big-btn" onclick="callBingo()">BINGO!</button>
-    <div id="calledNumbers"></div>
-  </div>
+  <div id="bingoBoard"></div>
+  <button id="bingoBtn" style="display:none;">BINGO!</button>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <div id="calledNumbers"></div>
+
   <script src="js/game.js"></script>
 </body>
 </html>

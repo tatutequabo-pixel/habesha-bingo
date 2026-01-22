@@ -8,10 +8,7 @@ let currentRoom = null;
 
 loginBtn.addEventListener('click', async () => {
   const password = hostPasswordInput.value.trim();
-  if (password !== 'Greenday1') {
-    alert('Wrong password!');
-    return;
-  }
+  if (password !== 'Greenday1') return alert('Wrong password!');
 
   try {
     const res = await fetch('/create-room', { method: 'POST' });
@@ -20,10 +17,8 @@ loginBtn.addEventListener('click', async () => {
 
     currentRoom = data;
 
-    // Show room code
     roomInfoDiv.innerHTML = `<h2>Room Code: ${currentRoom.roomCode}</h2>`;
 
-    // Show 100 player codes
     playerCodesDiv.innerHTML = '';
     currentRoom.playerCodes.forEach(code => {
       const p = document.createElement('p');
@@ -34,22 +29,21 @@ loginBtn.addEventListener('click', async () => {
     startBtn.style.display = 'inline-block';
   } catch (err) {
     console.error(err);
-    alert('Error creating room. Check server console.');
+    alert('Error creating room');
   }
 });
 
 startBtn.addEventListener('click', async () => {
   if (!currentRoom) return alert('No room created!');
   try {
-    const res = await fetch('/start-game', {
+    await fetch('/start-game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ roomCode: currentRoom.roomCode })
     });
-    if (!res.ok) throw new Error('Failed to start game');
-    alert('Game started! Numbers will auto-call every 15 seconds.');
+    alert('Game started!');
   } catch (err) {
     console.error(err);
-    alert('Error starting game. Check server.');
+    alert('Error starting game');
   }
 });

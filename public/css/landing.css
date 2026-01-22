@@ -1,14 +1,31 @@
-/* Landing page specific styles */
-.landing-container {
+body {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  text-align: center;
+  background: url('../assets/pixel-background.png') no-repeat center center fixed;
+  background-size: cover;
 }
 
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 30px;
+h1 {
+  font-size: 48px;
+  color: #ffdd59;
+  text-shadow: 2px 2px 5px #000;
+  margin-bottom: 40px;
+}
+
+button {
+  font-size: 20px;
+  padding: 15px 30px;
+  background: #1e90ff;
+  color: #fff;
+  border-radius: 10px;
+  transition: transform 0.2s ease;
+}
+
+button:hover {
+  transform: scale(1.1);
+  background: #3742fa;
 }
