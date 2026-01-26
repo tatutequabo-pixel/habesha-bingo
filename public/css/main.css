@@ -1,34 +1,55 @@
-/* Reset */
-* { margin:0; padding:0; box-sizing:border-box; }
+/* public/css/main.css */
 
-/* Body */
+/* ---------- RESET ---------- */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  font-family: 'Arial', sans-serif;
-  color:#fff;
-  background: url('../assets/pixel-background.png') no-repeat center center fixed;
-  background-size: cover;
+  margin: 0;
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0B0F1A;
+  color: #FFFFFF;
 }
 
-/* Buttons */
+/* ---------- COLORS ---------- */
+:root {
+  --bg-main: #0B0F1A;
+  --bg-card: #141A2E;
+  --bg-cell: #1E2747;
+  --gold: #D4AF37;
+  --gold-soft: rgba(212, 175, 55, 0.25);
+  --text-muted: #A0A4B8;
+  --danger: #E63946;
+}
+
+/* ---------- GLOBAL BUTTONS ---------- */
 button {
-  padding:10px 20px;
-  font-size:16px;
-  cursor:pointer;
-  border:none;
-  border-radius:8px;
-  background:#ff6b6b;
-  color:#fff;
-  transition: all 0.2s ease;
+  font-family: inherit;
+  cursor: pointer;
 }
 
-button:hover { background:#ff4757; transform:scale(1.05); }
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-/* Inputs */
-input {
-  padding:10px;
-  font-size:16px;
-  border-radius:6px;
-  border:2px solid #fff;
-  background: rgba(255,255,255,0.1);
-  color:#fff;
+.btn {
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: var(--bg-main);
+}
+
+/* ---------- UTILS ---------- */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

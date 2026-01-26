@@ -1,50 +1,61 @@
-const hostPasswordInput = document.getElementById('hostPassword');
-const loginBtn = document.getElementById('loginBtn');
-const roomInfoDiv = document.getElementById('roomInfo');
-const playerCodesDiv = document.getElementById('playerCodes');
-const startBtn = document.getElementById('startGame');
+// public/js/host.js
 
-let currentRoom = null;
+const socket = io();
 
-loginBtn.addEventListener('click', async () => {
-  const password = hostPasswordInput.value.trim();
-  if(password !== 'Greenday1') return alert('Wrong password!');
+const roomCodeInput = document.getElementById("roomCode");
+const passwordInput = document.getElementById("password");
+const joinBtn = document.getElementById("joinHost");
+const startBtn = document.getElementById("startGame");
+const callBtn = document.getElementById("callNumber");
 
-  try {
-    const res = await fetch('/create-room', { method:'POST' });
-    const data = await res.json();
+const roomCodeDisplay = document.getElementById("roomCodeDisplay");
+const numberDisplay = document.getElementById("currentNumber");
+const playerCodesList = document.getElementById("playerCodes");
 
-    if(!data.roomCode || !data.playerCodes) throw new Error('Invalid room data');
+let roomCode = null;
 
-    currentRoom = data;
-
-    roomInfoDiv.innerHTML = `<h2>Room Code: ${currentRoom.roomCode}</h2>`;
-
-    playerCodesDiv.innerHTML = '';
-    currentRoom.playerCodes.forEach(code => {
-      const p = document.createElement('p');
-      p.innerText = code;
-      playerCodesDiv.appendChild(p);
-    });
-
-    startBtn.style.display = 'inline-block';
-  } catch(err) {
-    console.error(err);
-    alert('Error creating room');
-  }
+// -------- Join as Host --------
+joinBtn.addEventListener("click", () => {
+  socket.emit("host:join", {
+    roomCode: roomCodeInput.value.trim().toUpperCase(),
+    password: passwordInput.value.trim(),
+  });
 });
 
-startBtn.addEventListener('click', async () => {
-  if(!currentRoom) return alert('No room created!');
-  try {
-    await fetch('/start-game', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ roomCode: currentRoom.roomCode })
-    });
-    alert('Game started!');
-  } catch(err) {
-    console.error(err);
-    alert('Error starting game');
-  }
+socket.on("host:joined", data => {
+  roomCode = data.roomCode;
+  roomCodeDisplay.textContent = roomCode;
+
+  playerCodesList.innerHTML = "";
+  data.playerCodes.forEach(code => {
+    const li = document.createElement("li");
+    li.textContent = code;
+    playerCodesList.appendChild(li);
+  });
+
+  startBtn.disabled = false;
+});
+
+// -------- Start Game --------
+startBtn.addEventListener("click", () => {
+  socket.emit("host:start", { roomCode });
+  startBtn.disabled = true;
+});
+
+socket.on("game:started", () => {
+  callBtn.disabled = false;
+});
+
+// -------- Call Numbers --------
+callBtn.addEventListener("click", () => {
+  socket.emit("host:call-number", { roomCode });
+});
+
+socket.on("game:number-called", number => {
+  numberDisplay.textContent = number;
+});
+
+// -------- Errors --------
+socket.on("error", msg => {
+  alert(msg);
 });

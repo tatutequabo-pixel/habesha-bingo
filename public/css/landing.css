@@ -1,30 +1,63 @@
-.landing-container {
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  text-align:center;
+/* public/css/landing.css */
+
+body {
+  background: radial-gradient(circle at top, #1E2747, #0B0F1A);
 }
 
-.landing-container h1 {
-  font-size:48px;
-  color:#ffdd59;
-  text-shadow:2px 2px 5px #000;
-  margin-bottom:40px;
+.landing {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.landing-container .buttons button {
-  font-size:20px;
-  padding:15px 30px;
-  margin:10px;
-  background:#1e90ff;
-  color:#fff;
-  border-radius:10px;
-  transition: transform 0.2s ease;
+.landing-content {
+  text-align: center;
+  padding: 20px;
 }
 
-.landing-container .buttons button:hover {
-  transform: scale(1.1);
-  background:#3742fa;
+.landing-content h1 {
+  font-size: 2.6rem;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.landing-content p {
+  color: var(--text-muted);
+  margin-bottom: 30px;
+}
+
+.landing-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.landing-buttons a {
+  text-decoration: none;
+  padding: 16px 28px;
+  border-radius: 16px;
+  font-weight: bold;
+}
+
+.landing-buttons .join {
+  background: var(--gold);
+  color: var(--bg-main);
+}
+
+.landing-buttons .host {
+  border: 2px solid var(--gold);
+  color: var(--gold);
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .landing-content h1 {
+    font-size: 2.2rem;
+  }
+
+  .landing-buttons {
+    flex-direction: column;
+  }
 }

@@ -1,118 +1,96 @@
-// Make sure in index.html or game.html you include:
-// <script src="/socket.io/socket.io.js"></script>
-// <script src="js/game.js" type="module"></script>
+// public/js/game.js
 
-const socket = io(); // Socket.io client
+const socket = io();
 
-const joinBtn = document.getElementById('joinBtn');
-const nameInput = document.getElementById('playerName');
-const roomCodeInput = document.getElementById('roomCode');
-const playerCodeInput = document.getElementById('playerCode');
-const bingoBtn = document.getElementById('bingoBtn');
-const boardDiv = document.getElementById('board');
-const calledNumbersDiv = document.getElementById('calledNumbers');
+const joinBtn = document.getElementById("joinGame");
+const bingoBtn = document.getElementById("bingoBtn");
 
-let playerCode, roomCode, board = [], marked = [];
+const nameInput = document.getElementById("playerName");
+const roomInput = document.getElementById("roomCode");
+const codeInput = document.getElementById("playerCode");
 
-// JOIN ROOM
-joinBtn.addEventListener('click', async () => {
-  const name = nameInput.value.trim();
-  roomCode = roomCodeInput.value.trim().toUpperCase();
-  playerCode = playerCodeInput.value.trim().toUpperCase();
+const boardContainer = document.getElementById("bingoBoard");
+const calledNumbersDiv = document.getElementById("calledNumbers");
+const playerNameDisplay = document.getElementById("displayName");
 
-  if (!name || !roomCode || !playerCode) {
-    alert('All fields are required!');
-    return;
-  }
+let roomCode = null;
+let playerCode = null;
+let board = [];
+let marked = new Set();
 
-  const res = await fetch('/join-room', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, roomCode, playerCode })
+// -------- Join Game --------
+joinBtn.addEventListener("click", () => {
+  socket.emit("player:join", {
+    name: nameInput.value.trim(),
+    roomCode: roomInput.value.trim().toUpperCase(),
+    playerCode: codeInput.value.trim().toUpperCase(),
   });
-
-  const data = await res.json();
-  if (data.error) {
-    alert(data.error);
-    return;
-  }
-
-  socket.emit('register-player', { roomCode, playerCode });
-  generateBoard();
 });
 
-// GENERATE BOARD
-function generateBoard() {
-  board = [];
-  marked = [];
-  const numbers = Array.from({ length: 75 }, (_, i) => i + 1).sort(() => 0.5 - Math.random());
-  for (let i = 0; i < 5; i++) {
-    board.push(numbers.slice(i * 5, i * 5 + 5));
-    marked.push([false, false, false, false, false]);
-  }
-  renderBoard();
-}
+socket.on("player:joined", data => {
+  roomCode = data.roomCode;
+  playerCode = codeInput.value.trim().toUpperCase();
+  board = data.board;
 
-// RENDER BOARD
-function renderBoard() {
-  boardDiv.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    const rowDiv = document.createElement('div');
-    rowDiv.classList.add('board-row');
-    for (let j = 0; j < 5; j++) {
-      const cell = document.createElement('button');
-      cell.innerText = board[i][j];
-      cell.classList.add('board-cell');
-      if (marked[i][j]) cell.classList.add('marked');
-      cell.addEventListener('click', () => markNumber(board[i][j]));
-      rowDiv.appendChild(cell);
-    }
-    boardDiv.appendChild(rowDiv);
-  }
-}
-
-// MARK NUMBER
-function markNumber(number) {
-  for (let i = 0; i < 5; i++) {
-    for (let j = 0; j < 5; j++) {
-      if (board[i][j] === number) marked[i][j] = true;
-    }
-  }
-  renderBoard();
-  socket.emit('mark-number', { roomCode, playerCode, number });
-}
-
-// BINGO BUTTON
-bingoBtn.addEventListener('click', () => {
-  let bingo = false;
-
-  // Check rows
-  bingo = marked.some(row => row.every(v => v));
-
-  // Check columns
-  for (let j = 0; j < 5; j++) {
-    if (marked.every(row => row[j])) bingo = true;
-  }
-
-  // Check diagonals
-  if ([0,1,2,3,4].every(i => marked[i][i])) bingo = true;
-  if ([0,1,2,3,4].every(i => marked[i][4-i])) bingo = true;
-
-  if (bingo) {
-    alert('BINGO! Sending to server for validation...');
-    socket.emit('mark-number', { roomCode, playerCode, number: 0 });
-  } else {
-    alert('Not a valid Bingo yet!');
-  }
+  playerNameDisplay.textContent = data.name;
+  renderBoard(board);
 });
 
-// SOCKET LISTENERS
-socket.on('number-called', (num) => {
-  const span = document.createElement('span');
-  span.innerText = num + ' ';
+// -------- Render Board --------
+function renderBoard(board) {
+  boardContainer.innerHTML = "";
+
+  board.forEach(row => {
+    row.forEach(cell => {
+      const div = document.createElement("div");
+      div.className = "cell";
+      div.textContent = cell === "FREE" ? "★" : cell;
+
+      if (cell === "FREE") {
+        div.classList.add("marked");
+        marked.add("FREE");
+      }
+
+      div.addEventListener("click", () => {
+        if (cell === "FREE") return;
+        if (marked.has(cell)) return;
+
+        div.classList.add("marked");
+        marked.add(cell);
+      });
+
+      boardContainer.appendChild(div);
+    });
+  });
+}
+
+// -------- Receive Called Numbers --------
+socket.on("game:number-called", number => {
+  const span = document.createElement("span");
+  span.textContent = number;
   calledNumbersDiv.appendChild(span);
 });
 
-socket.on('bingo', ({ playerCode: winnerCode, name }) => {
-  alert(`BINGO! Winner: ${name} (${winnerCode})`);
+// -------- Bingo Claim --------
+bingoBtn.addEventListener("click", () => {
+  socket.emit("player:bingo", {
+    roomCode,
+    playerCode,
+    marked: Array.from(marked),
+  });
+});
+
+socket.on("bingo:rejected", msg => {
+  alert(msg);
+});
+
+// -------- Game End --------
+socket.on("game:ended", data => {
+  alert(`🏆 BINGO! Winner: ${data.winner}`);
+  bingoBtn.disabled = true;
+});
+
+// -------- Errors --------
+socket.on("error", msg => {
+  alert(msg);
 });
