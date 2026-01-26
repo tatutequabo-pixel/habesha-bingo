@@ -1,8 +1,7 @@
-// server/index.js
-
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
 
 const {
   createRoom,
@@ -23,6 +22,18 @@ const io = new Server(server, {
 });
 
 app.use(express.json());
+
+// --------------------
+// SERVE STATIC FILES
+// --------------------
+
+// Make sure this path points to your public folder
+app.use(express.static(path.join(__dirname, "..", "public")));
+
+// Fallback for SPA routing: send index.html for any unknown route
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+});
 
 // --------------------
 // ADMIN HTTP ENDPOINTS
@@ -53,21 +64,18 @@ app.post("/admin/end-room/:roomCode", (req, res) => {
 // SOCKET.IO LOGIC
 // --------------------
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
   // -------- HOST --------
-
   socket.on("host:join", ({ roomCode, password }) => {
     try {
       if (password !== "Greenday") {
         socket.emit("error", "Invalid host password");
         return;
       }
-
       const room = connectHost(roomCode);
       socket.join(roomCode);
-
       socket.emit("host:joined", {
         roomCode: room.roomCode,
         playerCodes: room.availablePlayerCodes,
@@ -90,7 +98,6 @@ io.on("connection", socket => {
     try {
       const number = callNextNumber(roomCode);
       if (!number) return;
-
       io.to(roomCode).emit("game:number-called", number);
     } catch (err) {
       socket.emit("error", err.message);
@@ -98,12 +105,10 @@ io.on("connection", socket => {
   });
 
   // -------- PLAYER --------
-
   socket.on("player:join", ({ roomCode, name, playerCode }) => {
     try {
       const board = joinPlayer(roomCode, name, playerCode);
       socket.join(roomCode);
-
       socket.emit("player:joined", {
         board,
         roomCode,
@@ -117,12 +122,10 @@ io.on("connection", socket => {
   socket.on("player:bingo", ({ roomCode, playerCode, marked }) => {
     try {
       const result = claimBingo(roomCode, playerCode, marked);
-
       if (!result.success) {
         socket.emit("bingo:rejected", result.message);
         return;
       }
-
       // 🎉 WINNER
       io.to(roomCode).emit("game:ended", {
         winner: result.winner,
